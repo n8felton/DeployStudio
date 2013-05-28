@@ -1,10 +1,12 @@
 #!/bin/sh
 
-VERSION=1.0
+VERSION=1.1
+
+SYS_VERS=`sw_vers -productVersion | awk -F. '{ print $2 }'`
 
 SETREGPROPTOOL=`dirname "${0}"`/setregproptool 
 
-if [ -e "${SETREGPROPTOOL}" ] && [ ! `/usr/bin/arch` = "ppc" ]
+if [ -e "${SETREGPROPTOOL}" ] && [ ${SYS_VERS} -ge 6 ]
 then
   "${SETREGPROPTOOL}" -c
   if [ ${?} -eq 0 ]

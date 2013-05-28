@@ -7,21 +7,18 @@ echo "${SCRIPT_NAME} - v1.0 ("`date`")"
 
 PLBUDDY=/usr/libexec/PlistBuddy
 
-update_language() {
-  echo "Updating language preference in '${1}'"
-
-  ${PLBUDDY} -c "Delete :AppleLanguages" "${1}" &>/dev/null
-  if [ ${?} -eq 0 ] || [ -n "${3}" ]
-  then
-    ${PLBUDDY} -c "Add :AppleLanguages array" "${1}"
-    ${PLBUDDY} -c "Add :AppleLanguages:0 string '${2}'" "${1}"
-  fi
+update_region() {
+  echo "Updating region preference in '${1}'"
+  ${PLBUDDY} -c "Delete :AppleLocale" "${1}" &>/dev/null
+  ${PLBUDDY} -c "Add :AppleLocale string ${2}" "${1}" &>/dev/null
+  ${PLBUDDY} -c "Delete :Country" "${1}" &>/dev/null
+  ${PLBUDDY} -c "Add :Country string ${2:3:2}" "${1}" &>/dev/null
 }
 
 if [ ${#} -lt 2 ]
 then
   echo "Command: ${SCRIPT_NAME} ${*}"
-  echo "Usage: ${SCRIPT_NAME} <volume name> <languagecode> [--include-homedirs]"
+  echo "Usage: ${SCRIPT_NAME} <volume name> <regioncode> [--include-homedirs]"
   echo "RuntimeAbortWorkflow: missing arguments!"
   exit 1
 fi
@@ -33,7 +30,7 @@ else
   VOLUME_PATH=/Volumes/${1}
 fi
 
-update_language "${VOLUME_PATH}/Library/Preferences/.GlobalPreferences.plist" "${2}" --force
+update_region "${VOLUME_PATH}/Library/Preferences/.GlobalPreferences.plist" "${2}" --force
 
 if [ -d "${VOLUME_PATH}"/var/root/Library/Preferences ]
 then
@@ -41,7 +38,7 @@ then
   GLOBALPREFERENCES_FILES=`find . -name "\.GlobalPreferences.*plist"`
   for GLOBALPREFERENCES_FILE in ${GLOBALPREFERENCES_FILES}
   do
-    update_language "${GLOBALPREFERENCES_FILE}" "${2}" --force
+    update_region "${GLOBALPREFERENCES_FILE}" "${2}" --force
   done
 fi
 
@@ -55,7 +52,7 @@ then
       GLOBALPREFERENCES_FILES=`find . -name "\.GlobalPreferences.*plist"`
       for GLOBALPREFERENCES_FILE in ${GLOBALPREFERENCES_FILES}
       do
-        update_language "${GLOBALPREFERENCES_FILE}" "${2}"
+        update_region "${GLOBALPREFERENCES_FILE}" "${2}"
       done
     fi
   done

@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-/bin/echo "${SCRIPT_NAME} - v1.27 ("`date`")"
+/bin/echo "${SCRIPT_NAME} - v1.29 ("`date`")"
 
 custom_logger() {
   /bin/echo "${SCRIPT_NAME} - $1"
@@ -27,7 +27,7 @@ exec_if_exists() {
 
 restore_initial_config() {
   # restoring default login password
-  AUTO_LOGIN_USER=`defaults read /etc/deploystudio/etc/autoLoginUser autoLoginUser`
+  AUTO_LOGIN_USER=`defaults read /etc/deploystudio/etc/autoLoginUser autoLoginUser 2>/dev/null`
   if [ -n "${AUTO_LOGIN_USER}" ]
   then
     if [ -e /etc/deploystudio/etc/kcpassword ]
@@ -177,11 +177,16 @@ exec_if_exists "/etc/deploystudio/bin/ds_enable_ard_agent.sh"
 # disable iCloud and gestures demos
 if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -ge 7 ]
 then
+  SYS_VERS=`sw_vers -productVersion`
   custom_logger "Disabling iCloud and gestures preference panes auto-launch at first login."
+
+  defaults write /Library/Preferences/com.apple.SetupAssistant RegisteredVersion "${SYS_VERS}"
+
   for USER_TEMPLATE in "/System/Library/User Template"/*
   do
     defaults write "${USER_TEMPLATE}"/Library/Preferences/com.apple.SetupAssistant DidSeeCloudSetup -bool TRUE
     defaults write "${USER_TEMPLATE}"/Library/Preferences/com.apple.SetupAssistant GestureMovieSeen none
+    defaults write "${USER_TEMPLATE}"/Library/Preferences/com.apple.SetupAssistant LastSeenCloudProductVersion "${SYS_VERS}"
   done
 
   for USER_HOME in /Users/*
@@ -199,6 +204,7 @@ then
       then
         defaults write "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant DidSeeCloudSetup -bool TRUE
         defaults write "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant GestureMovieSeen none
+        defaults write "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant LastSeenCloudProductVersion "${SYS_VERS}"
         chown "${USER_UID}" "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant.plist
       fi
     fi

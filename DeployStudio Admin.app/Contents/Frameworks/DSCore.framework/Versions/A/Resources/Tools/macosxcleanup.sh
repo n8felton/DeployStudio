@@ -2,7 +2,7 @@
 
 SCRIPT_NAME=`basename "${0}"`
 TOOLS_FOLDER=`dirname "${0}"`
-VERSION=1.16
+VERSION=1.18
 
 if [ ${#} -lt 2 ]
 then
@@ -15,11 +15,14 @@ echo "Running ${SCRIPT_NAME} v${VERSION}"
 
 if [ "${1}" == "-preimaging" ]
 then
+  rm -f  "${2}"/Library/LaunchDaemons/com.deploystudio.freezeHomedirs.plist 2>&1
+  rm -rf "${2}"/System/Library/Caches/* 2>&1
+  rm -rf "${2}"/etc/deploystudio 2>&1
+  rm -rf "${2}"/private/dss_homedirs_ref 2>&1
   rm -f  "${2}"/var/vm/sleepimage 2>&1
   rm -f  "${2}"/var/vm/swapfile* 2>&1
-  rm -rf "${2}"/System/Library/Caches/* 2>&1
   rm -f  "${2}"/var/log/ds_finalize.log 2>&1
-  rm -rf "${2}"/etc/deploystudio 2>&1
+  rm -f  "${2}"/usr/local/sbin/ds_freeze_homedirs.sh 2>&1
 elif [ "${1}" == "-postrestoration" ]
 then
   rm -f  "${2}/Desktop DB" 2>&1
@@ -49,6 +52,18 @@ then
     uuidgen > "${2}"/Library/Filesystems/Xsan/config/uuid
     chmod 644 "${2}"/Library/Filesystems/Xsan/config/uuid
     chown root:wheel "${2}"/Library/Filesystems/Xsan/config/uuid
+  fi
+  if [ -e "${2}"/Library/Preferences/Xsan/uuid ]
+  then
+    HOSTUUID=`ioreg -rd1 -c IOPlatformExpertDevice | awk -F= '/(UUID)/ { gsub("[ \"]", ""); print $2 }'`
+    if [ -n "${HOSTUUID}" ]
+    then
+      echo "${HOSTUUID}" > "${2}"/Library/Preferences/Xsan/uuid
+      chmod 600 "${2}"/Library/Preferences/Xsan/uuid
+      chown root:wheel "${2}"/Library/Preferences/Xsan/uuid
+    else
+      rm "${2}"/Library/Preferences/Xsan/uuid 2>&1
+    fi
   fi
 
   if [ -e "${2}"/System/Library/CoreServices/SystemVersion.plist ] && [ ! -e "${2}"/System/Library/CoreServices/ServerVersion.plist ] && [ -e "${2}"/usr/libexec/configureLocalKDC ]

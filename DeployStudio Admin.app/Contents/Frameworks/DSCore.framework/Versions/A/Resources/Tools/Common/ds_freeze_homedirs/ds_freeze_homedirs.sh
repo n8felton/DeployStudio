@@ -2,7 +2,7 @@
 
 SCRIPT_NAME=`/usr/bin/basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.1 ("`date`")"
+echo "${SCRIPT_NAME} - v1.2 ("`date`")"
 
 # Defaults
 BACKUP_FOLDER=/private/dss_homedirs_ref
@@ -61,6 +61,13 @@ restore_user_homedirectory() {
 
 # main
 am_i_root
+
+if [ -e "/Library/LaunchAgents/com.deploystudio.finalizeScript.plist" ]
+then
+  echo "  Sorry, DeployStudio finalize agent is still running!"
+  echo "  Will retry at next boot..."
+  exit 1
+fi
 
 if [ "${1}" == "--include-shared-folder" ]
 then

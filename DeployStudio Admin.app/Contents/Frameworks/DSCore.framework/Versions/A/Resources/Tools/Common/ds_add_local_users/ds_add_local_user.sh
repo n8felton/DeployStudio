@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.15 ("`date`")"
+echo "${SCRIPT_NAME} - v1.16 ("`date`")"
 
 # Usage: ${SCRIPT_NAME} $1 $2 $3 [$4 $5 $6 $7]
 # $1 -> realname
@@ -15,25 +15,6 @@ echo "${SCRIPT_NAME} - v1.15 ("`date`")"
 # $5 -> hidden (YES/NO)
 # $6 -> localization (English, French, etc...)
 # $7 -> uidNumber
-
-#
-# Wait for network services to be initialized
-#
-echo "  Checking for the default route to be active..."
-ATTEMPTS=0
-MAX_ATTEMPTS=12
-while ! (netstat -rn -f inet | grep -q default)
-do
-  if [ ${ATTEMPTS} -le ${MAX_ATTEMPTS} ]
-  then
-    echo "  Waiting for the default route to be active..."
-    sleep 5
-	ATTEMPTS=`expr ${ATTEMPTS} + 1`
-  else
-    echo "  Network not configured, local user creation failed (${MAX_ATTEMPTS} attempts), will retry at next boot!" 2>&1
-	exit 1
-  fi
-done
 
 #
 # create the default user

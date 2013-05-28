@@ -1,10 +1,10 @@
 #!/bin/sh
 
 SCRIPT_NAME=`basename "${0}"`
-VERSION=1.0
+VERSION=1.1
 
 usage() {
-  echo "Usage: ${SCRIPT_NAME} {none|command|full} [<password>  <old password>]"
+  echo "Usage: ${SCRIPT_NAME} {none|command|full} [<password> [<old password>]]"
   echo "Example: ${SCRIPT_NAME} command \"123321\" \"123456\""
   echo "RuntimeAbortScript"
   exit 1
@@ -17,9 +17,11 @@ then
   usage
 fi
 
+SYS_VERS=`sw_vers -productVersion | awk -F. '{ print $2 }'`
+
 SETREGPROPTOOL=`dirname "${0}"`/setregproptool 
 
-if [ -e "${SETREGPROPTOOL}" ] && [ ! `/usr/bin/arch` = "ppc" ]
+if [ -e "${SETREGPROPTOOL}" ] && [ ${SYS_VERS} -ge 6 ]
 then
   "${SETREGPROPTOOL}" -c
   PASSWORDSET=${?}
@@ -95,7 +97,7 @@ then
     echo "Old password required!"
     usage
   fi
-elif [ ${#} -eq 2 ] || [ "${1}" = "none" ]
+elif [ ${#} -ge 2 ] || [ "${1}" = "none" ]
 then
   case "${1}" in
     "none")

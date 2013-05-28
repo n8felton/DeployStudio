@@ -37,6 +37,11 @@ fi
 
 "${SCRIPT_PATH}"/ds_finalize_install.sh "${1}"
 
+if [ -e "${VOLUME_PATH}"/var/db/ConfigurationProfiles/Setup/.profileSetupDone ]
+then
+  rm "${VOLUME_PATH}"/var/db/ConfigurationProfiles/Setup/.profileSetupDone
+fi
+
 cp "${SCRIPT_PATH}"/ds_auto_enroll/ds_auto_enroll.sh "${VOLUME_PATH}"/etc/deploystudio/bin/ds_auto_enroll.sh
 	
 chmod 700 "${VOLUME_PATH}"/etc/deploystudio/bin/ds_auto_enroll.sh

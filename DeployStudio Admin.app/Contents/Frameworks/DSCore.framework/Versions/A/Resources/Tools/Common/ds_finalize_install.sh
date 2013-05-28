@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.10 ("`date`")"
+echo "${SCRIPT_NAME} - v1.12 ("`date`")"
 
 if [ ${#} -ne 1 ]
 then
@@ -28,20 +28,30 @@ then
   exit 1
 fi
 
+if [ -e "${VOLUME_PATH}"/etc/deploystudio/Applications/Finalize.app ]
+then
+  echo "Finalize resources already installed, skipping..."
+  echo "${SCRIPT_NAME} - end"
+  exit 0
+fi
+
 VOLUME_SYS=`defaults read "${VOLUME_PATH}"/System/Library/CoreServices/SystemVersion ProductVersion | awk -F. '{ print $2 }'`
 if [ -z "${VOLUME_SYS}" ]
 then
   VOLUME_SYS=`sw_vers -productVersion | awk -F. '{ print $2 }'`
 fi
 
-if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
+if [ `vsdbutil -c "${VOLUME_PATH}" 2>/dev/null | grep -qw 'are enabled'` -ne 0 ]
 then
-  diskutil enableOwnership "${VOLUME_PATH}"
-else
-  /usr/sbin/vsdbutil -a "${VOLUME_PATH}"
+  if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
+  then
+    diskutil enableOwnership "${VOLUME_PATH}"
+  else
+    /usr/sbin/vsdbutil -a "${VOLUME_PATH}"
+  fi
 fi
 
-rm -f "${VOLUME_PATH}"/var/db/dyld/dyld*
+rm -f "${VOLUME_PATH}"/var/db/dyld/dyld* 2>/dev/null
 
 if [ ! -e "${VOLUME_PATH}/Library/LaunchDaemons" ]
 then
@@ -134,7 +144,7 @@ then
   chown root:wheel "${VOLUME_PATH}"/etc/deploystudio/sbin/ds_finalize_cleanup.sh
 fi
 
-AUTO_LOGIN_USER=`defaults read "${VOLUME_PATH}"/Library/Preferences/com.apple.loginwindow autoLoginUser`
+AUTO_LOGIN_USER=`defaults read "${VOLUME_PATH}"/Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null`
 if [ -n "${AUTO_LOGIN_USER}" ]
 then
   if [ -e "${VOLUME_PATH}"/etc/kcpassword ]
@@ -142,7 +152,7 @@ then
     mv "${VOLUME_PATH}"/etc/kcpassword "${VOLUME_PATH}"/etc/deploystudio/etc/
   fi
   defaults write  "${VOLUME_PATH}"/etc/deploystudio/etc/autoLoginUser autoLoginUser "${AUTO_LOGIN_USER}"
-  defaults delete "${VOLUME_PATH}"/Library/Preferences/com.apple.loginwindow autoLoginUser
+  defaults delete "${VOLUME_PATH}"/Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null
   chmod 644 "${VOLUME_PATH}"/Library/Preferences/com.apple.loginwindow.plist
   chown root:wheel "${VOLUME_PATH}"/Library/Preferences/com.apple.loginwindow.plist
 fi
