@@ -2,8 +2,13 @@
 
 SCRIPT_NAME=`basename "${0}"`
 SYS_VERS=`sw_vers -productVersion | awk -F. '{ print $2 }'`
+SYS_MIN_VERS=`sw_vers -productVersion | awk -F. '{ print $3 }'`
+if [ -z "${SYS_MIN_VERS}" ]
+then
+  SYS_MIN_VERS=0
+fi
 
-echo "${SCRIPT_NAME} - v1.14 ("`date`")"
+echo "${SCRIPT_NAME} - v1.15 ("`date`")"
 
 #
 # Export command line installer environment variables
@@ -32,7 +37,10 @@ then
   fi
   if [ ${SYS_VERS} -gt 6 ]
   then
-    INSTALLER_OPTS=-allowUntrusted
+    if [ ${SYS_VERS} -gt 7 ] || [ ${SYS_MIN_VERS} -gt 3 ]
+    then
+      INSTALLER_OPTS=-allowUntrusted
+    fi
   fi
   /usr/sbin/installer -pkg "${PACKAGE}" -target / -verboseR ${INSTALLER_OPTS}
   if [ ${?} -eq 0 ]
