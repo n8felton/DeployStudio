@@ -157,7 +157,7 @@ EOF
       then
         SUCCESS="YES"
       else
-        echo "An error occurred while trying to establish a trusted binding with the server ${ODM_SERVER}, new attempt in 10 seconds..." 2>&1
+        printf "\nAn error occurred while trying to establish a trusted binding with the server ${ODM_SERVER}, new attempt in 10 seconds...\n" 2>&1
         sleep 10
         ATTEMPTS=`expr ${ATTEMPTS} + 1`
       fi
@@ -171,7 +171,7 @@ EOF
       then
         SUCCESS="YES"
       else
-        echo "An error occurred while trying to establish an anonymous binding with the server ${ODM_SERVER}, new attempt in 10 seconds..." 2>&1
+        printf "\nAn error occurred while trying to establish an anonymous binding with the server ${ODM_SERVER}, new attempt in 10 seconds...\n" 2>&1
         sleep 10
         ATTEMPTS=`expr ${ATTEMPTS} + 1`
       fi
@@ -187,7 +187,7 @@ then
   #
   # Trigger the node availability
   #
-  echo "Triggering /LDAPv3/${ODM_SERVER} node..." 2>&1
+  printf "\nTriggering /LDAPv3/${ODM_SERVER} node...\n" 2>&1
   NODE_AVAILABILITY=`dscl localhost -read "/LDAPv3/${ODM_SERVER}" | grep "TrustInformation:" | grep "${TRUST_INFORMATION}"`
   ATTEMPTS=0
   MAX_ATTEMPTS=12

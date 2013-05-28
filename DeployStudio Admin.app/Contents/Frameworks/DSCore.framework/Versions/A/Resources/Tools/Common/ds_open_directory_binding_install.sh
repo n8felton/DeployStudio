@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.11 ("`date`")"
+echo "${SCRIPT_NAME} - v1.12 ("`date`")"
 
 if [ ${#} -lt 2 ]
 then
@@ -43,13 +43,6 @@ VOLUME_SYS=`defaults read "${VOLUME_PATH}"/System/Library/CoreServices/SystemVer
 if [ -z "${VOLUME_SYS}" ]
 then
   VOLUME_SYS=`sw_vers -productVersion | awk -F. '{ print $2 }'`
-fi
-
-if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
-then
-  diskutil enableOwnership "${VOLUME_PATH}"
-else
-  /usr/sbin/vsdbutil -a "${VOLUME_PATH}"
 fi
 
 if [ ${VOLUME_SYS} -lt 7 ]

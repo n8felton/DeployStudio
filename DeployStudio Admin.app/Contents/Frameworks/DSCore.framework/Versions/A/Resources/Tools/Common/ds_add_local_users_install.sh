@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.5 ("`date`")"
+echo "${SCRIPT_NAME} - v1.6 ("`date`")"
 
 if [ "${1}" = "/" ]
 then
@@ -17,13 +17,6 @@ then
   echo "RuntimeAbortWorkflow: \"${VOLUME_PATH}\" volume not found!"
   echo "Usage: ${SCRIPT_NAME} <volume name>"
   exit 1
-fi
-
-if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
-then
-  diskutil enableOwnership "${VOLUME_PATH}"
-else
-  /usr/sbin/vsdbutil -a "${VOLUME_PATH}"
 fi
 
 "${SCRIPT_PATH}"/ds_finalize_install.sh "${1}"

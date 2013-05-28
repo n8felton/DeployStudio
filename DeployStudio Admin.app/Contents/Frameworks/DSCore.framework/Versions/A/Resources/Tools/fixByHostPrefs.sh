@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "fixByHostPrefs.sh - v1.10 ("`date`")"
+echo "fixByHostPrefs.sh - v1.11 ("`date`")"
 
 _HOMES=("/Volumes/${1}/Users" "/Volumes/${1}/System/Library/User Template")
 _MACADDR=`/sbin/ifconfig en0 | grep -w ether | awk '{ gsub(":", ""); print $2 }'`
@@ -100,6 +100,7 @@ do
       if [ -d "${_HOME}" ]
 	  then
         rm "${_HOME}"/.*.lockfile "${_HOME}"/*.lockfile &>/dev/null
+        rm "${_HOME}"/com.apple.NetworkBrowserAgent.* &>/dev/null
         cd "${_HOME}"
 		fix_byhost_folder_preferences
       fi
@@ -135,6 +136,7 @@ then
       if [ -e "${EXTRA_USER_BYHOST_PATH}" ] && [ "${EXTRA_USER_HOME}" != "/var/empty" ] && [ "${EXTRA_USER_HOME}" != "/var/root" ] && [ "${EXTRA_USER_HOME:0:7}" != "/Users/" ]
       then
         rm "${EXTRA_USER_BYHOST_PATH}"/.*.lockfile "${EXTRA_USER_BYHOST_PATH}"/*.lockfile &>/dev/null
+        rm "${EXTRA_USER_BYHOST_PATH}"/com.apple.NetworkBrowserAgent.* &>/dev/null
 	    cd "${EXTRA_USER_BYHOST_PATH}"
 		fix_byhost_folder_preferences
 		cd "/Volumes/${1}/var/db/dslocal/nodes/Default/users/"

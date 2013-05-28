@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.12 ("`date`")"
+echo "${SCRIPT_NAME} - v1.16 ("`date`")"
 
 if [ ${#} -ne 1 ]
 then
@@ -31,6 +31,8 @@ fi
 if [ -e "${VOLUME_PATH}"/etc/deploystudio/Applications/Finalize.app ]
 then
   echo "Finalize resources already installed, skipping..."
+  # make a 2s pause to warrant post-install tasks execution order
+  sleep 2
   echo "${SCRIPT_NAME} - end"
   exit 0
 fi
@@ -41,7 +43,8 @@ then
   VOLUME_SYS=`sw_vers -productVersion | awk -F. '{ print $2 }'`
 fi
 
-if [ `vsdbutil -c "${VOLUME_PATH}" 2>/dev/null | grep -qw 'are enabled'` -ne 0 ]
+OWNERS_STATUS=`diskutil info "${VOLUME_PATH}" | tr -d ' ' | grep 'Owners:Disabled'`
+if [ -n "${OWNERS_STATUS}" ]
 then
   if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
   then
@@ -123,7 +126,7 @@ then
   fi
 fi
 
-if [ ! -e "${VOLUME_PATH}"/Library/LaunchAgents/com.deploystudio.finalizeCleanup.plist ]
+if [ ! -e "${VOLUME_PATH}"/Library/LaunchDaemons/com.deploystudio.finalizeCleanup.plist ]
 then
   cp "${SCRIPT_PATH}"/com.deploystudio.finalizeCleanup.plist "${VOLUME_PATH}"/Library/LaunchDaemons/
   chmod 644 "${VOLUME_PATH}"/Library/LaunchDaemons/com.deploystudio.finalizeCleanup.plist
@@ -162,9 +165,6 @@ then
   touch "${VOLUME_PATH}"/var/db/.AppleSetupDone
   touch "${VOLUME_PATH}"/var/db/.ds.delete.AppleSetupDone
 fi
-
-# 2s sleep to preserve post-install tasks execution order
-sleep 2
 
 echo "${SCRIPT_NAME} - end"
 

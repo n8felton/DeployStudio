@@ -34,12 +34,12 @@ restore_user_homedirectory() {
     then
       rm "${BACKUP_FOLDER}/${USER_SHORTNAME}/.dss.update.backup"
       echo "  Updating backup of user home directory \"/Users/${USER_SHORTNAME}\""
-      rsync -av --delete "/Users/${USER_SHORTNAME}" "${BACKUP_FOLDER}/"
+      rsync -a --delete "/Users/${USER_SHORTNAME}" "${BACKUP_FOLDER}/"
       echo "  Backup update complete"
     elif [ -e "${BACKUP_FOLDER}/${USER_SHORTNAME}" ]
     then
 	  echo "  Restoring user home directory \"/Users/${USER_SHORTNAME}\""
-      rsync -av --delete "${BACKUP_FOLDER}/${USER_SHORTNAME}" "/Users/"
+      rsync -a --delete "${BACKUP_FOLDER}/${USER_SHORTNAME}" "/Users/"
       echo "  Restore complete"
     else
       if [ ! -e "${BACKUP_FOLDER}" ]

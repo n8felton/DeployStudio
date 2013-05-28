@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.19 ("`date`")"
+echo "${SCRIPT_NAME} - v1.20 ("`date`")"
 
 if [ ${#} -lt 1 ]
 then
@@ -35,6 +35,7 @@ then
   echo "RuntimeAbortWorkflow: \"${VOLUME_PATH}/etc/deploystudio/bin/ds_active_directory_binding.plist\" configuration file not found!"
   exit 1
 else
+  "${SCRIPT_PATH}"/ds_finalize_install.sh "${1}"
   chmod 600 "${VOLUME_PATH}"/etc/deploystudio/bin/ds_active_directory_binding.plist
   chown root:wheel "${VOLUME_PATH}"/etc/deploystudio/bin/ds_active_directory_binding.plist
 fi
@@ -43,13 +44,6 @@ VOLUME_SYS=`defaults read "${VOLUME_PATH}"/System/Library/CoreServices/SystemVer
 if [ -z "${VOLUME_SYS}" ]
 then
   VOLUME_SYS=`sw_vers -productVersion | awk -F. '{ print $2 }'`
-fi
-
-if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
-then
-  diskutil enableOwnership "${VOLUME_PATH}"
-else
-  /usr/sbin/vsdbutil -a "${VOLUME_PATH}"
 fi
 
 if [ ${VOLUME_SYS} -lt 7 ]

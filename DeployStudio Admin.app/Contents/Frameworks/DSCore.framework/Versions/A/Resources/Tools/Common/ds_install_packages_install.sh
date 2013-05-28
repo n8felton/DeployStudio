@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.13 ("`date`")"
+echo "${SCRIPT_NAME} - v1.14 ("`date`")"
 
 if [ ${#} -lt 2 ]
 then
@@ -34,13 +34,6 @@ then
   echo "Usage: ${SCRIPT_NAME} <volume name> <package index file> [--ignore-install-status]"
   echo "RuntimeAbortWorkflow: \"${VOLUME_PATH}/etc/deploystudio/ds_packages/${2}\" package index file not found!"
   exit 1
-fi
-
-if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
-then
-  diskutil enableOwnership "${VOLUME_PATH}"
-else
-  /usr/sbin/vsdbutil -a "${VOLUME_PATH}"
 fi
 
 "${SCRIPT_PATH}"/ds_finalize_install.sh "${1}"

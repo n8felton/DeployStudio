@@ -2,7 +2,7 @@
 
 SCRIPT_NAME=`basename "${0}"`
 TOOLS_FOLDER=`dirname "${0}"`
-VERSION=1.18
+VERSION=1.20
 
 if [ ${#} -lt 2 ]
 then
@@ -13,24 +13,27 @@ fi
 
 echo "Running ${SCRIPT_NAME} v${VERSION}"
 
+rm -f  "${2}"/Library/LaunchAgents/com.deploystudio.FinalizeApp.plist 2>/dev/null
+rm -f  "${2}"/Library/LaunchAgents/com.deploystudio.finalizeCleanup.plist 2>/dev/null
+rm -f  "${2}"/Library/LaunchAgents/com.deploystudio.finalizeScript.plist 2>/dev/null
+rm -f  "${2}"/Library/LaunchDaemons/com.deploystudio.FinalizeApp.plist 2>/dev/null
+rm -f  "${2}"/Library/LaunchDaemons/com.deploystudio.finalizeCleanup.plist 2>/dev/null
+rm -f  "${2}"/Library/LaunchDaemons/com.deploystudio.finalizeScript.plist 2>/dev/null
+rm -rf "${2}"/etc/deploystudio 2>/dev/null
+
 if [ "${1}" == "-preimaging" ]
 then
   rm -f  "${2}"/Library/LaunchDaemons/com.deploystudio.freezeHomedirs.plist 2>&1
-  rm -rf "${2}"/System/Library/Caches/* 2>&1
-  rm -rf "${2}"/etc/deploystudio 2>&1
+  rm -f  "${2}"/usr/local/sbin/ds_freeze_homedirs.sh 2>&1
   rm -rf "${2}"/private/dss_homedirs_ref 2>&1
   rm -f  "${2}"/var/vm/sleepimage 2>&1
   rm -f  "${2}"/var/vm/swapfile* 2>&1
+  rm -rf "${2}"/System/Library/Caches/* 2>&1
   rm -f  "${2}"/var/log/ds_finalize.log 2>&1
-  rm -f  "${2}"/usr/local/sbin/ds_freeze_homedirs.sh 2>&1
 elif [ "${1}" == "-postrestoration" ]
 then
   rm -f  "${2}/Desktop DB" 2>&1
   rm -f  "${2}/Desktop DF" 2>&1
-  rm -f  "${2}"/Library/LaunchDaemons/com.deploystudio.finalize.plist 2>&1
-  rm -f  "${2}"/Library/LaunchDaemons/com.deploystudio.finalizeScript.plist 2>&1
-  rm -f  "${2}"/Library/LaunchAgents/com.deploystudio.finalizeScript.plist 2>&1
-  rm -f  "${2}"/Library/LaunchAgents/com.deploystudio.FinalizeApp.plist 2>&1
   rm -f  "${2}"/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist 2>&1
   rm -f  "${2}"/Library/Preferences/SystemConfiguration/com.apple.NetworkInterfaces.plist 2>&1
   rm -f  "${2}"/Library/Preferences/com.apple.Bluetooth.plist 2>&1
@@ -45,7 +48,6 @@ then
   rm -f  "${2}"/var/pcast/server/krb_cc 2>&1
   rm -f  "${2}"/var/vm/sleepimage 2>&1
   rm -f  "${2}"/var/log/ds_finalize.log 2>&1
-  rm -rf "${2}"/etc/deploystudio 2>&1
   
   if [ -e "${2}"/Library/Filesystems/Xsan/config/uuid ]
   then

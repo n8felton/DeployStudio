@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SCRIPT_NAME=`basename "${0}"`
-VERSION=1.7
+VERSION=1.8
 
 unmount_device() {
   ATTEMPTS=0
@@ -15,8 +15,14 @@ unmount_device() {
       OUTPUT=`diskutil unmountDisk "${1}" 2>&1`
       if [ ${?} -eq 0 ] || [[ "${OUTPUT}" =~ "successful" ]]
 	  then
+        echo "Unmount successful!"
         SUCCESS="YES"
       else
+        KEXTCACHE_PID=`ps -ax | grep kextcache | grep -v grep | awk '{ print $1 }'`
+        if [ -n "${KEXTCACHE_PID}" ]
+        then
+          kill ${KEXTCACHE_PID} 2>/dev/null
+        fi
         echo "-> an error occured while trying to unmount the device ${1}, new attempt in 5 seconds..."
         sleep 5
         ATTEMPTS=`expr ${ATTEMPTS} + 1`
