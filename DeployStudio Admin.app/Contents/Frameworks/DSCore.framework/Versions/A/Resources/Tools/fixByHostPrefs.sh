@@ -3,7 +3,7 @@
 echo "fixByHostPrefs.sh - v1.10 ("`date`")"
 
 _HOMES=("/Volumes/${1}/Users" "/Volumes/${1}/System/Library/User Template")
-_MACADDR=`/sbin/ifconfig en0 | awk '/ether/ { gsub(":", ""); print $2 }'`
+_MACADDR=`/sbin/ifconfig en0 | grep -w ether | awk '{ gsub(":", ""); print $2 }'`
 _HOSTUUID=`ioreg -rd1 -c IOPlatformExpertDevice | awk -F= '/(UUID)/ { gsub("[ \"]", ""); print $2 }'`
 _RENAMEDFILES=0
 _DEBUG=0

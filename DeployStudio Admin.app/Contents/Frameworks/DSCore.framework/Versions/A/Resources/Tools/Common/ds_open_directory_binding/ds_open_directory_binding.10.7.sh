@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.29 ("`date`")"
+echo "${SCRIPT_NAME} - v1.31 ("`date`")"
 
 #
 # functions
@@ -213,7 +213,7 @@ then
   #
   if [ -n "${CM_COMPUTER_GROUPS}" ] && [ -n "${ADMIN_LOGIN}" ] && [ -n "${ADMIN_PWD}" ]
   then
-    MAC_ADDR=`ifconfig en0 | grep ether | awk '{print $2}'`
+    MAC_ADDR=`ifconfig en0 | grep -w ether | awk '{print $2}'`
     HARDWARE_UUID=`ioreg -rd1 -c IOPlatformExpertDevice | awk -F= '/(UUID)/ { gsub("[ \"]", ""); print $2 }'`
 
     if [ -n "${ENABLE_TRUSTED_BINDING}" ] && [ "${ENABLE_TRUSTED_BINDING}" = "YES" ]
@@ -263,7 +263,7 @@ then
         if [ -z "${INVALID_GROUP}" ]
         then
           echo "Adding ${COMPUTER_ID} to computer group ${COMPUTER_GROUP}..."
-          dseditgroup -o edit -n /LDAPv3/${ODM_SERVER} -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" -a "${COMPUTER_ID}" -L -t computer -T computergroup -q "$COMPUTER_GROUP}"
+          dseditgroup -o edit -n /LDAPv3/${ODM_SERVER} -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" -a "${COMPUTER_ID}" -L -t computer -T computergroup -q "${COMPUTER_GROUP}"
           if [ ${?} -ne 0 ]
           then
             echo "Failed to add '${COMPUTER_ID}' to '${COMPUTER_GROUP}' computer group!"

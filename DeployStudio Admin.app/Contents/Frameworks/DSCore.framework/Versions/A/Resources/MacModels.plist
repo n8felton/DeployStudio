@@ -136,6 +136,10 @@
 			name = "MacBook Air Core i5 1.7 13-Inch (Mid-2011), MacBook Air Core i7 1.8 13-Inch (Mid-2011)";
 		};
 	};
+	MacBookAir5 = {
+		icon = "MacBookAirUnibody.png";
+		name = "MacBook Air Mid 2012";
+	};
 	MacBookPro1 = {
 		icon = "MacBookPro.png";
 		"MacBookPro1,1" = {
@@ -218,6 +222,14 @@
 			icon = "MacBookProUnibody.png";
 			name = "MacBook Pro Core i7 2.2 17-Inch Early 2011";
 		};
+	};
+	MacBookPro9 = {
+		icon = "MacBookProUnibody.png";
+		name = "MacBook Pro Mid 2012";
+	};
+	MacBookPro10 = {
+		icon = "MacBookProRetina.png";
+		name = "MacBook Pro Retina Mid 2012";
 	};
 	"Macmini1,1" = {
 		icon = "MacMini.png";
