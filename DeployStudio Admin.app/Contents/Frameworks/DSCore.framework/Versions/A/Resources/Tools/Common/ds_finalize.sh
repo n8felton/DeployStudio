@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-/bin/echo "${SCRIPT_NAME} - v1.29 ("`date`")"
+/bin/echo "${SCRIPT_NAME} - v1.30 ("`date`")"
 
 custom_logger() {
   /bin/echo "${SCRIPT_NAME} - $1"
@@ -114,6 +114,15 @@ if [ -z "${DYLD_SHARED_CACHES}" ]
 then
   custom_logger "updating dyld shared caches..."
   /usr/bin/update_dyld_shared_cache -force
+fi
+
+#
+# Rebuild xpchelper cache if needed
+#
+if [ -e /usr/libexec/xpchelper ] && [ ! -e /System/Library/Caches/com.apple.xpchelper.cache ]
+then
+  custom_logger "rebuilding xpchelper cache..."
+  /usr/libexec/xpchelper --rebuild-cache
 fi
 
 #
