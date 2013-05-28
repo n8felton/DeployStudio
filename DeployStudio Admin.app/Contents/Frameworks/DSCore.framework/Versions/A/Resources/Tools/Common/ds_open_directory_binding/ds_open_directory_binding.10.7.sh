@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.28 ("`date`")"
+echo "${SCRIPT_NAME} - v1.29 ("`date`")"
 
 #
 # functions
@@ -51,10 +51,10 @@ do
   then
     echo "Waiting for the default route to be active..."
     sleep 10
-	ATTEMPTS=`expr ${ATTEMPTS} + 1`
+    ATTEMPTS=`expr ${ATTEMPTS} + 1`
   else
     echo "Network not configured, OD binding failed (${MAX_ATTEMPTS} attempts), will retry at next boot!" 2>&1
-	exit 1
+    exit 1
   fi
 done
 
@@ -152,6 +152,7 @@ do
       dsconfigldap ${DSCONFIG_OPTIONS} -f -a "${ODM_SERVER}" -c "${COMPUTER_ID}" -u "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" 2>&1 <<EOF
 y
 EOF
+
       if [ ${?} -eq 0 ]
       then
         SUCCESS="YES"
@@ -165,6 +166,7 @@ EOF
       dsconfigldap ${DSCONFIG_OPTIONS} -a "${ODM_SERVER}" 2>&1 <<EOF
 y
 EOF
+
       if [ ${?} -eq 0 ]
       then
         SUCCESS="YES"
@@ -194,9 +196,9 @@ then
     if [ ${ATTEMPTS} -le ${MAX_ATTEMPTS} ]
     then
       NODE_AVAILABILITY=`dscl localhost -read "/LDAPv3/${ODM_SERVER}" | grep "TrustInformation:" | grep "${TRUST_INFORMATION}"`
-	  if [ -z "${NODE_AVAILABILITY}" ]
-	  then
-	    echo "The /LDAPv3/${ODM_SERVER} node is unavailable, new attempt in 10 seconds..." 2>&1
+      if [ -z "${NODE_AVAILABILITY}" ]
+      then
+        echo "The /LDAPv3/${ODM_SERVER} node is unavailable, new attempt in 10 seconds..." 2>&1
         sleep 10
         ATTEMPTS=`expr ${ATTEMPTS} + 1`
       fi
@@ -220,6 +222,7 @@ then
     fi
 
     # Create/update computer account
+    echo "Creating/updating computer record ${COMPUTER_ID}..."
     dscl -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" /LDAPv3/${ODM_SERVER} -create /Computers/${COMPUTER_ID} ENetAddress  "${MAC_ADDR}"
     dscl -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" /LDAPv3/${ODM_SERVER} -merge  /Computers/${COMPUTER_ID} RealName     "${COMPUTER_ID}"   
     dscl -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" /LDAPv3/${ODM_SERVER} -merge  /Computers/${COMPUTER_ID} HardwareUUID "${HARDWARE_UUID}"   
@@ -227,44 +230,47 @@ then
     # Get the computer GUID
     COMPUTER_GUID=`dscl /LDAPv3/${ODM_SERVER} -read /Computers/${COMPUTER_ID} | grep GeneratedUID | awk '{ print $2 }'`
 
-    # Loop through computer groups array
-    for COMPUTER_GROUP in ${CM_COMPUTER_GROUPS}
-    do
-      # Check if the group exists and try to create it if it doesn't
-      INVALID_GROUP=
-      dscl /LDAPv3/${ODM_SERVER} -read /ComputerGroups/${COMPUTER_GROUP} RecordName >/dev/null 2>&1
-      if [ ${?} -ne 0 ]
-      then
-        RECORD_NAME=`dscl /LDAPv3/${ODM_SERVER} -search /ComputerGroups RealName "${COMPUTER_GROUP}" | head -n 1 | awk '{ print $1 }'`
-        if [ -n "${RECORD_NAME}" ]
-        then
-          COMPUTER_GROUP=${RECORD_NAME}
-        else
-          if [ -n "${CREATE_COMPUTER_GROUPS}" ] && [ "${CREATE_COMPUTER_GROUPS}" = 'YES' ]
-          then
-            echo "Creating computer group ${COMPUTER_GROUP}..."
-            dseditgroup -o create -n /LDAPv3/${ODM_SERVER} -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" -r "${COMPUTER_GROUP}" -L -T computergroup -q "${COMPUTER_GROUP}"
-            if [ ${?} -ne 0 ]
-            then
-              echo "Failed to create '${COMPUTER_GROUP}' computer group!"
-              INVALID_GROUP="YES"
-            fi
-          else
-            echo "The computer group '${COMPUTER_GROUP}' doesn't exist, skipping!"
-            INVALID_GROUP="YES"
-          fi
-        fi
-      fi
-      if [ -z "${INVALID_GROUP}" ]
-      then
-        echo "Adding ${COMPUTER_ID} to computer group ${COMPUTER_GROUP}..."
-        dseditgroup -o edit -n /LDAPv3/${ODM_SERVER} -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" -a "${COMPUTER_ID}" -L -t computer -T computergroup -q "${COMPUTER_GROUP}"
+    if [ -n "${COMPUTER_GUID}" ]
+    then
+      # Loop through computer groups array
+      for COMPUTER_GROUP in ${CM_COMPUTER_GROUPS}
+      do
+        # Check if the group exists and try to create it if it doesn't
+        INVALID_GROUP=
+        dscl /LDAPv3/${ODM_SERVER} -read /ComputerGroups/${COMPUTER_GROUP} RecordName >/dev/null 2>&1
         if [ ${?} -ne 0 ]
         then
-          echo "Failed to add '${COMPUTER_ID}' to '${COMPUTER_GROUP}' computer group!"
+          RECORD_NAME=`dscl /LDAPv3/${ODM_SERVER} -search /ComputerGroups RealName "${COMPUTER_GROUP}" | head -n 1 | awk '{ print $1 }'`
+          if [ -n "${RECORD_NAME}" ]
+          then
+            COMPUTER_GROUP=${RECORD_NAME}
+          else
+            if [ -n "${CREATE_COMPUTER_GROUPS}" ] && [ "${CREATE_COMPUTER_GROUPS}" = 'YES' ]
+            then
+              echo "Creating computer group ${COMPUTER_GROUP}..."
+              dseditgroup -o create -n /LDAPv3/${ODM_SERVER} -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" -r "${COMPUTER_GROUP}" -L -T computergroup -q "${COMPUTER_GROUP}"
+              if [ ${?} -ne 0 ]
+              then
+                echo "Failed to create '${COMPUTER_GROUP}' computer group!"
+                INVALID_GROUP="YES"
+              fi
+            else
+              echo "The computer group '${COMPUTER_GROUP}' doesn't exist, skipping!"
+              INVALID_GROUP="YES"
+            fi
+          fi
         fi
-      fi
-    done
+        if [ -z "${INVALID_GROUP}" ]
+        then
+          echo "Adding ${COMPUTER_ID} to computer group ${COMPUTER_GROUP}..."
+          dseditgroup -o edit -n /LDAPv3/${ODM_SERVER} -u "${ADMIN_LOGIN}" -P "${ADMIN_PWD}" -a "${COMPUTER_ID}" -L -t computer -T computergroup -q "$COMPUTER_GROUP}"
+          if [ ${?} -ne 0 ]
+          then
+            echo "Failed to add '${COMPUTER_ID}' to '${COMPUTER_GROUP}' computer group!"
+          fi
+        fi
+      done
+    fi
   fi
 
   #
@@ -275,24 +281,24 @@ then
     if [ -n "${ADMIN_LOGIN}" ] && [ -n "${ADMIN_PWD}" ] && [ -e "/System/Library/CoreServices/ServerVersion.plist" ]
     then
       DEFAULT_REALM=`more /Library/Preferences/edu.mit.Kerberos | grep default_realm | awk '{ print $3 }'`
-	  if [ -n "${DEFAULT_REALM}" ]
-	  then
-	    echo "The binding process looks good, will try to configure Kerberized services on this machine for the default realm ${DEFAULT_REALM}..." 2>&1
-	    /usr/sbin/sso_util configure -r "${DEFAULT_REALM}" -a "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" all
-	  fi
-	fi
+      if [ -n "${DEFAULT_REALM}" ]
+      then
+        echo "The binding process looks good, will try to configure Kerberized services on this machine for the default realm ${DEFAULT_REALM}..." 2>&1
+        /usr/sbin/sso_util configure -r "${DEFAULT_REALM}" -a "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" all
+      fi
+    fi
     #
     # Give OD a chance to fully apply new settings
     #
     echo "Applying changes..." 2>&1
     sleep 10
-	
+
     if [ -e "${CONFIG_FILE}" ]
-	then
-	  /usr/bin/srm -mf "${CONFIG_FILE}"
-	fi
+    then
+      /usr/bin/srm -mf "${CONFIG_FILE}"
+    fi
     /usr/bin/srm -mf "${0}"
-	exit 0
+    exit 0
   fi
 fi
 

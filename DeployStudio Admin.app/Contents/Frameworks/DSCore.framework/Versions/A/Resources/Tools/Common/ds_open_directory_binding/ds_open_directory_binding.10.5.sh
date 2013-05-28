@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.27 ("`date`")"
+echo "${SCRIPT_NAME} - v1.29 ("`date`")"
 
 #
 # functions
@@ -51,10 +51,10 @@ do
   then
     echo "Waiting for the default route to be active..."
     sleep 10
-	ATTEMPTS=`expr ${ATTEMPTS} + 1`
+    ATTEMPTS=`expr ${ATTEMPTS} + 1`
   else
     echo "Network not configured, OD binding failed (${MAX_ATTEMPTS} attempts), will retry at next boot!" 2>&1
-	exit 1
+    exit 1
   fi
 done
 
@@ -159,7 +159,7 @@ do
       dsconfigldap ${DSCONFIG_OPTIONS} -f -a "${ODM_SERVER}" -c "${COMPUTER_ID}" -u "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" 2>&1
       if [ ${?} -eq 0 ]
       then
-	    SUCCESS="YES"
+        SUCCESS="YES"
       else
         echo "An error occurred while trying to establish a trusted binding with the server ${ODM_SERVER}, new attempt in 10 seconds..." 2>&1
         sleep 10
@@ -204,9 +204,9 @@ then
     if [ ${ATTEMPTS} -le ${MAX_ATTEMPTS} ]
     then
       NODE_AVAILABILITY=`dscl localhost -read "/LDAPv3/${ODM_SERVER}" | grep "TrustInformation:" | grep "${TRUST_INFORMATION}"`
-	  if [ -z "${NODE_AVAILABILITY}" ]
-	  then
-	    echo "The /LDAPv3/${ODM_SERVER} node is unavailable, new attempt in 10 seconds..." 2>&1
+      if [ -z "${NODE_AVAILABILITY}" ]
+      then
+        echo "The /LDAPv3/${ODM_SERVER} node is unavailable, new attempt in 10 seconds..." 2>&1
         sleep 10
         ATTEMPTS=`expr ${ATTEMPTS} + 1`
       fi
@@ -239,9 +239,9 @@ then
           sleep 10
           ATTEMPTS=`expr ${ATTEMPTS} + 1`
         fi
-	  else
+      else
         echo "Authentication search policy update failed (${MAX_ATTEMPTS} attempts), will retry at next boot!" 2>&1
-		exit 1
+        exit 1
       fi
     done
   fi
@@ -266,9 +266,9 @@ then
           sleep 10
           ATTEMPTS=`expr ${ATTEMPTS} + 1`
         fi
-	  else
+      else
         echo "Contacts search policy update failed (${MAX_ATTEMPTS} attempts), will retry at next boot!" 2>&1
-		exit 1
+        exit 1
       fi
     done
   fi
@@ -290,15 +290,15 @@ then
         dscl localhost -append /Search CSPSearchPath "/LDAPv3/${ODM_SERVER}" 2>&1
         if [ ${?} -eq 0 ]
         then
-	      SUCCESS="YES"
+          SUCCESS="YES"
         else
           echo "An error occured while trying to update the authentication search path, new attempt in 10 seconds..." 2>&1
           sleep 10
           ATTEMPTS=`expr ${ATTEMPTS} + 1`
         fi
- 	  else
+      else
         echo "Authentication search path update failed (${MAX_ATTEMPTS} attempts), will retry at next boot!" 2>&1
-		exit 1
+        exit 1
       fi
     done
   fi
@@ -317,15 +317,15 @@ then
         dscl localhost -append /Contact CSPSearchPath "/LDAPv3/${ODM_SERVER}" 2>&1
         if [ ${?} -eq 0 ]
         then
-	      SUCCESS="YES"
+          SUCCESS="YES"
         else
           echo "An error occured while trying to update the contacts search path, new attempt in 10 seconds..." 2>&1
           sleep 10
           ATTEMPTS=`expr ${ATTEMPTS} + 1`
         fi
- 	  else
+      else
         echo "Contacts search path update failed (${MAX_ATTEMPTS} attempts), will retry at next boot!" 2>&1
-		exit 1
+        exit 1
       fi
     done
   fi
@@ -418,18 +418,18 @@ then
     if [ -n "${ADMIN_LOGIN}" ] && [ -n "${ADMIN_PWD}" ] && [ -e "/System/Library/CoreServices/ServerVersion.plist" ]
     then
       DEFAULT_REALM=`more /Library/Preferences/edu.mit.Kerberos | grep default_realm | awk '{ print $3 }'`
-	  if [ -n "${DEFAULT_REALM}" ]
-	  then
-	    echo "The binding process looks good, will try to configure Kerberized services on this machine for the default realm ${DEFAULT_REALM}..." 2>&1
-	    /usr/sbin/sso_util configure -r "${DEFAULT_REALM}" -a "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" all
-	  fi
-	fi
-	if [ -e "${CONFIG_FILE}" ]
-	then
-	  /usr/bin/srm -mf "${CONFIG_FILE}"
-	fi
+      if [ -n "${DEFAULT_REALM}" ]
+      then
+        echo "The binding process looks good, will try to configure Kerberized services on this machine for the default realm ${DEFAULT_REALM}..." 2>&1
+        /usr/sbin/sso_util configure -r "${DEFAULT_REALM}" -a "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" all
+      fi
+    fi
+    if [ -e "${CONFIG_FILE}" ]
+    then
+      /usr/bin/srm -mf "${CONFIG_FILE}"
+    fi
     /usr/bin/srm -mf "${0}"
-	exit 0
+    exit 0
   fi
 fi
 

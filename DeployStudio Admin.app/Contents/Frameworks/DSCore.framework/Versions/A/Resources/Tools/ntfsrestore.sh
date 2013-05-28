@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SCRIPT_NAME=`basename "${0}"`
-VERSION=2.16
+VERSION=2.18
 
 unmount_device() {
   ATTEMPTS=0
@@ -140,14 +140,14 @@ unmount_device "${DEVICE}"
 BOOT_CONFIG_FILE=`echo "${1}" | sed s/"\\.ntfs"/"\\.bcd"/ | sed s/"\\.gz$"//`
 if [ -e "${BOOT_CONFIG_FILE}" ]
 then
-  if [ -e "${TOOLS_FOLDER}/vista.deviceboot.bcd" ]
+  if [ -e "${TOOLS_FOLDER}/ms.deviceboot.bcd" ]
   then
-    # vista.deviceboot.bcd (/Boot/BCD) was copied from Vista after running the following commands
+    # ms.deviceboot.bcd (/Boot/BCD) was copied from Windows (Vista/7) after running the following commands
     # > bcdedit /set {bootmgr} device boot
     # > bcdedit /set {default} device boot
     # > bcdedit /set {default} osdevice boot
-    echo "-> restoring generic BCD boot config (${TOOLS_FOLDER}/vista.deviceboot.bcd)..."
-    "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" "${TOOLS_FOLDER}/vista.deviceboot.bcd" /Boot/BCD
+    echo "-> restoring generic BCD boot config (${TOOLS_FOLDER}/ms.deviceboot.bcd)..."
+    "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" "${TOOLS_FOLDER}/ms.deviceboot.bcd" /Boot/BCD
   else
     echo "-> restoring BCD boot config (${BOOT_CONFIG_FILE})..."
     "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" "${BOOT_CONFIG_FILE}" /Boot/BCD
@@ -190,30 +190,50 @@ fi
 #  exit 1
 #fi
 
-# update ComputerName in SYSPREP.INF or UNATTENDED.XML file
-if [ -n "${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}" ]
+# sysprep file lookup
+SYSPREP_FILE=""
+"${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" /SysPrep/SYSPREP.INF > /tmp/SYSPREP.INF
+if [ ${?} -eq 0 ]
 then
-  echo "-> looking for Sysprep configuration files..."
-  "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" /SysPrep/SYSPREP.INF > /tmp/SYSPREP.INF
-  INF_SYSPREP_COMPUTERNAME=`grep -m 1 "ComputerName=" /tmp/SYSPREP.INF | tr -d " \n\r" | sed s/'*'/'\\\*'/`
-  if [ -n "${INF_SYSPREP_COMPUTERNAME}" ]
+  SYSPREP_FILE=/SysPrep/SYSPREP.INF
+else
+  "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" /windows/panther/unattend.XML > /tmp/unattend.xml
+  if [ ${?} -eq 0 ]
   then
-    sed s%"${INF_SYSPREP_COMPUTERNAME}"%"ComputerName=${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}"% /tmp/SYSPREP.INF > /tmp/SYSPREP.INF.NEW
-    echo "-> updating computer name in /SysPrep/SYSPREP.INF to ${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}..."
-    "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/SYSPREP.INF.NEW /SysPrep/SYSPREP.INF
-    if [ ${?} -ne 0 ]
+    SYSPREP_FILE=/windows/panther/unattend.XML
+  else
+    "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" /windows/system32/sysprep/unattend.xml > /tmp/unattend.xml
+    if [ ${?} -eq 0 ]
     then
-      echo "RuntimeAbortScript"
-      exit 1
+      SYSPREP_FILE=/windows/system32/sysprep/unattend.xml
+    fi
+  fi
+fi
+
+# update sysprep's file ComputerName attribute
+if [ -n "${SYSPREP_FILE}" ] && [ -n "${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}" ]
+then
+  if [ `basename "${SYSPREP_FILE}"` = "SYSPREP.INF" ]
+  then
+    INF_SYSPREP_COMPUTERNAME=`grep -i -m 1 "ComputerName=" /tmp/SYSPREP.INF | tr -d " \n\r" | sed s/'*'/'\\\*'/`
+    if [ -n "${INF_SYSPREP_COMPUTERNAME}" ]
+    then
+      sed s%"${INF_SYSPREP_COMPUTERNAME}"%"ComputerName=${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}"% /tmp/SYSPREP.INF > /tmp/SYSPREP.INF.NEW
+      echo "-> updating computer name in ${SYSPREP_FILE} to ${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}..."
+      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/SYSPREP.INF.NEW "${SYSPREP_FILE}"
+      if [ ${?} -ne 0 ]
+      then
+        echo "RuntimeAbortScript"
+        exit 1
+      fi
     fi
   else
-    "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" /windows/panther/unattend.XML > /tmp/unattend.XML
-    XML_SYSPREP_COMPUTERNAME=`grep -m 1 "<ComputerName>.*</ComputerName>" /tmp/unattend.XML | tr -d " \n\r" | sed s/'*'/'\\\*'/ | awk -F"ComputerName" '{ print $2 }'`
+    XML_SYSPREP_COMPUTERNAME=`grep -i -m 1 "<ComputerName>.*</ComputerName>" /tmp/unattend.xml | tr -d " \n\r" | sed s/'*'/'\\\*'/ | awk -F"ComputerName" '{ print $2 }'`
     if [ -n "${XML_SYSPREP_COMPUTERNAME}" ]
     then
-      sed s%"${XML_SYSPREP_COMPUTERNAME}"%">${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}</"% /tmp/unattend.XML > /tmp/unattend.XML.NEW
-      echo "-> updating computer name in /windows/panther/unattend.XML to ${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}..."
-      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/unattend.XML.NEW /windows/panther/unattend.XML
+      sed s%"${XML_SYSPREP_COMPUTERNAME}"%">${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}</"% /tmp/unattend.xml > /tmp/unattend.xml.NEW
+      echo "-> updating computer name in ${SYSPREP_FILE} to ${DS_BOOTCAMP_WINDOWS_COMPUTER_NAME}..."
+      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/unattend.xml.NEW "${SYSPREP_FILE}"
       if [ ${?} -ne 0 ]
       then
         echo "RuntimeAbortScript"
@@ -223,30 +243,32 @@ then
   fi
 fi 
 
-# update ProductKey in SYSPREP.INF or UNATTENDED.XML file
-if [ -n "${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}" ]
+# update sysprep's file ProductKey attribute
+if [ -n "${SYSPREP_FILE}" ] && [ -n "${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}" ]
 then
-  echo "-> looking for Sysprep configuration files..."
-  "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" /SysPrep/SYSPREP.INF > /tmp/SYSPREP.INF
-  INF_SYSPREP_PRODUCT_KEY=`grep -m 1 "ProductKey=" /tmp/SYSPREP.INF | tr -d " \n\r" | sed s/'*'/'\\\*'/`
-  if [ -n "${INF_SYSPREP_PRODUCT_KEY}" ]
+  if [ `basename "${SYSPREP_FILE}"` = "SYSPREP.INF" ]
   then
-    sed s%"${INF_SYSPREP_PRODUCT_KEY}"%"ProductKey=${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}"% /tmp/SYSPREP.INF > /tmp/SYSPREP.INF.NEW
-    echo "-> updating product key in /SysPrep/SYSPREP.INF to ${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}..."
-    "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/SYSPREP.INF.NEW /SysPrep/SYSPREP.INF
-    if [ ${?} -ne 0 ]
+    "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" "${SYSPREP_FILE}" > /tmp/SYSPREP.INF
+    INF_SYSPREP_PRODUCT_KEY=`grep -i -m 1 "ProductKey=" /tmp/SYSPREP.INF | tr -d " \n\r" | sed s/'*'/'\\\*'/`
+    if [ -n "${INF_SYSPREP_PRODUCT_KEY}" ]
     then
-      echo "RuntimeAbortScript"
-      exit 1
+      sed s%"${INF_SYSPREP_PRODUCT_KEY}"%"ProductKey=${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}"% /tmp/SYSPREP.INF > /tmp/SYSPREP.INF.NEW
+      echo "-> updating product key in ${SYSPREP_FILE} to ${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}..."
+      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/SYSPREP.INF.NEW "${SYSPREP_FILE}"
+      if [ ${?} -ne 0 ]
+      then
+        echo "RuntimeAbortScript"
+        exit 1
+      fi
     fi
   else
-    "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" /windows/panther/unattend.XML > /tmp/unattend.XML
-    XML_SYSPREP_PRODUCT_KEY=`grep -m 1 "<ProductKey>.*</ProductKey>" /tmp/unattend.XML | tr -d " \n\r" | sed s/'*'/'\\\*'/ | awk -F"ProductKey" '{ print $2 }'`
+    "${TOOLS_FOLDER}"/ntfscat -f "${NTFS_DEVICE}" "${SYSPREP_FILE}" > /tmp/unattend.xml
+    XML_SYSPREP_PRODUCT_KEY=`grep -i -m 1 "<ProductKey>.*</ProductKey>" /tmp/unattend.xml | tr -d " \n\r" | sed s/'*'/'\\\*'/ | awk -F"ProductKey" '{ print $2 }'`
     if [ -n "${XML_SYSPREP_PRODUCT_KEY}" ]
     then
-      sed s%"${XML_SYSPREP_PRODUCT_KEY}"%">${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}</"% /tmp/unattend.XML > /tmp/unattend.XML.NEW
-      echo "-> updating product key in /windows/panther/unattend.XML to ${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}..."
-      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/unattend.XML.NEW /windows/panther/unattend.XML
+      sed s%"${XML_SYSPREP_PRODUCT_KEY}"%">${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}</"% /tmp/unattend.xml > /tmp/unattend.xml.NEW
+      echo "-> updating product key in ${SYSPREP_FILE} to ${DS_BOOTCAMP_WINDOWS_PRODUCT_KEY}..."
+      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" /tmp/unattend.xml.NEW "${SYSPREP_FILE}"
       if [ ${?} -ne 0 ]
       then
         echo "RuntimeAbortScript"
@@ -254,7 +276,7 @@ then
       fi
     fi
   fi
-fi
+fi 
 
 # update MBR partition table
 echo "-> updating MBR partition table (partition ${PARTITION_ID})"

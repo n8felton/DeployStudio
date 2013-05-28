@@ -2,7 +2,7 @@
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v2.0 ("`date`")"
+echo "${SCRIPT_NAME} - v2.2 ("`date`")"
 
 BOOT_DEVICE=`diskutil info / | grep "Device Node:" | sed s/Device\ Node://g | sed s/\ *//`
 if [ "_${BOOT_DEVICE}" = "_" ]
@@ -31,7 +31,7 @@ SET_SIZE=0
 # The following loop looks for all ATA/SATA/SAS drives available (different from the boot drive).
 # These drives will all be added to the RAID that will be created.
 # A minimum of 2 disks is reauired.
-# Change "-ATA-SATA-SAS-" to "-FireWire-" when restoring in Target Mode or with external firewire drives.
+# Change "-ATA-SATA-SAS-" to "-FireWire-Thunderbolt-" when restoring in Target Mode or with external firewire drives.
 SUPPORTED_PROTOCOLS="-ATA-SATA-SAS-"
 while [ ${DISK_NB} -le 20 ];
 do

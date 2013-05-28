@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.20 ("`date`")"
+echo "${SCRIPT_NAME} - v1.21 ("`date`")"
 
 #
 # functions
@@ -44,6 +44,7 @@ ADMIN_GROUPS=`/usr/libexec/PlistBuddy -c "Print :admingroups" "${CONFIG_FILE}" 2
 
 UID_MAPPING=`/usr/libexec/PlistBuddy -c "Print :uid" "${CONFIG_FILE}" 2>/dev/null`
 GID_MAPPING=`/usr/libexec/PlistBuddy -c "Print :gid" "${CONFIG_FILE}" 2>/dev/null`
+GGID_MAPPING=`/usr/libexec/PlistBuddy -c "Print :ggid" "${CONFIG_FILE}" 2>/dev/null`
 
 #
 # Wait for network services to be initialized
@@ -197,6 +198,11 @@ then
   then
     sleep 1
     dsconfigad -gid "${GID_MAPPING}" 2>&1
+  fi
+  if [ -n "${GGID_MAPPING}" ]
+  then
+    sleep 1
+    dsconfigad -ggid "${GGID_MAPPING}" 2>&1
   fi
 
   #

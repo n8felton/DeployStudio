@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "ds_partition.sh - v2.1 ("`date`")"
+echo "ds_partition.sh - v2.2 ("`date`")"
 
 ARCH=`arch`
 BOOT_DEVICE=`diskutil info / | grep "Device Node:" | sed s/Device\ Node://g | sed s/\ *//`
@@ -28,7 +28,7 @@ DEVICE_FOUND=0
 
 # The internal disk is usualy associated to the device /dev/disk0.
 # The following loop looks for the first ATA/SATA/SAS drive available (different from the boot drive).
-# Change "-ATA-SATA-SAS-" to "-FireWire-" when restoring in Target Mode or with external firewire drives.
+# Change "-ATA-SATA-SAS-" to "-FireWire-Thunderbolt-" when restoring in Target Mode or with external firewire drives.
 SUPPORTED_PROTOCOLS="-ATA-SATA-SAS-"
 while [ ${DISK_NB} -le 20 ];
 do

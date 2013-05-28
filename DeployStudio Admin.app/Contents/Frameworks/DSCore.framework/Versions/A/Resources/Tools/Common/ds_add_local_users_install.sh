@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.4 ("`date`")"
+echo "${SCRIPT_NAME} - v1.5 ("`date`")"
 
 if [ "${1}" = "/" ]
 then
@@ -19,10 +19,11 @@ then
   exit 1
 fi
 
-VOLUME_DEVICE=`diskutil info "${VOLUME_PATH}" | grep "Device Node:" | awk '{ print $3 }'`
-if [ -n "${VOLUME_DEVICE}" ]
+if [ `sw_vers -productVersion | awk -F. '{ print $2 }'` -gt 5 ]
 then
-  disktool -A "${VOLUME_DEVICE}"
+  diskutil enableOwnership "${VOLUME_PATH}"
+else
+  /usr/sbin/vsdbutil -a "${VOLUME_PATH}"
 fi
 
 "${SCRIPT_PATH}"/ds_finalize_install.sh "${1}"

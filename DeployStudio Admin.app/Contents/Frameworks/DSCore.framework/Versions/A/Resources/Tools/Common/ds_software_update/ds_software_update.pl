@@ -6,7 +6,7 @@ use File::Basename;
 
 $ENV{COMMAND_LINE_INSTALL} = 1;
 
-print basename($0) . " - v1.6 (" . localtime(time) . ")\n";
+print basename($0) . " - v1.7 (" . localtime(time) . ")\n";
 
 # Wait for network services to be initialized
 print "Checking for the default route to be active...\n";
@@ -45,7 +45,7 @@ if (length($SUS_HOST_NAME) > 0) {
 
 # Check if updates are available
 print "Checking if updates are available...\n";
-my @NEW_UPDATES = `/usr/sbin/softwareupdate -l 2>/dev/null | grep "^  *\* " | sed s/"^ *\\* *"// | awk -F- '{ print \$1 }'`;
+my @NEW_UPDATES = qx(/usr/sbin/softwareupdate -l 2>/dev/null | grep "^  *\\* " | sed s/"^ *\\* *"// | awk -F- '{ print \$1 }');
 if (@NEW_UPDATES > 0) {
     while (@NEW_UPDATES > 0) {
         # Remove trailing newlines
@@ -64,7 +64,7 @@ if (@NEW_UPDATES > 0) {
         
         # Check if updates are available
         print "Checking if updates are available...\n";
-        @NEW_UPDATES = `/usr/sbin/softwareupdate -l 2>/dev/null | grep "^  *\* " | sed s/"^ *\\* *"// | awk -F- '{ print \$1 }'`;
+        @NEW_UPDATES = qx(/usr/sbin/softwareupdate -l 2>/dev/null | grep "^  *\\* " | sed s/"^ *\\* *"// | awk -F- '{ print \$1 }');
     }
 } else {
     print "No new software available...\n";
