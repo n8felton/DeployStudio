@@ -1,0 +1,31 @@
+.localized
+Activity Monitor.app/
+AirPort Utility.app/
+AppleScript Editor.app/
+Audio MIDI Setup.app/
+Bluetooth File Exchange.app/
+Boot Camp Assistant.app/
+ColorSync Utility.app/
+Console.app/
+DeployStudio Admin.app/Contents/Applications/
+DeployStudio Admin.app/Contents/Info.plist
+DeployStudio Admin.app/Contents/MacOS/
+DeployStudio Admin.app/Contents/PkgInfo
+DeployStudio Admin.app/Contents/Plugins/
+DeployStudio Admin.app/Contents/Resources/
+DeployStudio Admin.app/Contents/sbin/
+DeployStudio Assistant.app
+DeployStudio Runtime.app
+DigitalColor Meter.app/
+Disk Utility.app/
+Grab.app/
+Grapher.app/
+Java Preferences.app/
+Keychain Access.app/
+Migration Assistant.app/
+Network Utility.app/
+RAID Utility.app/
+System Information.app/
+Terminal.app/
+VoiceOver Utility.app/
+X11.app/

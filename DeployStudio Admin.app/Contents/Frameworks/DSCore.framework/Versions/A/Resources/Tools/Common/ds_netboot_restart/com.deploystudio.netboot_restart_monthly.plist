@@ -1,0 +1,13 @@
+{
+	Label = "DeployStudio automated NetBoot restart script";
+	Program = "/etc/deploystudio/bin/ds_netboot_restart.sh";
+	ProgramArguments = (
+		"/etc/deploystudio/bin/ds_netboot_restart.sh",
+	);
+	"StartCalendarInterval" = {
+		Hour = 0;
+		Minute = 0;
+		Day = 0;
+	};
+	Nice = 1;
+}
