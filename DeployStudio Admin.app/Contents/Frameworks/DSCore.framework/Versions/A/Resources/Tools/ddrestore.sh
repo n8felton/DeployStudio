@@ -1,39 +1,7 @@
 #!/bin/sh
 
 SCRIPT_NAME=`basename "${0}"`
-VERSION=1.8
-
-unmount_device() {
-  ATTEMPTS=0
-  MAX_ATTEMPTS=12
-  SUCCESS=
-  while [ "_${SUCCESS}" = "_" ]
-  do
-    if [ ${ATTEMPTS} -le ${MAX_ATTEMPTS} ]
-    then
-      echo "-> unmounting device ${1}..."
-      OUTPUT=`diskutil unmountDisk "${1}" 2>&1`
-      if [ ${?} -eq 0 ] || [[ "${OUTPUT}" =~ "successful" ]]
-	  then
-        echo "Unmount successful!"
-        SUCCESS="YES"
-      else
-        KEXTCACHE_PID=`ps -ax | grep kextcache | grep -v grep | awk '{ print $1 }'`
-        if [ -n "${KEXTCACHE_PID}" ]
-        then
-          kill ${KEXTCACHE_PID} 2>/dev/null
-        fi
-        echo "-> an error occured while trying to unmount the device ${1}, new attempt in 5 seconds..."
-        sleep 5
-        ATTEMPTS=`expr ${ATTEMPTS} + 1`
-	  fi
-    else
-      echo "Failed to unmount device ${1}, script aborted."
-      echo "RuntimeAbortScript"
-      exit 1
-    fi
-  done
-}
+VERSION=1.9
 
 if [ ${#} -lt 2 ]
 then
@@ -84,7 +52,7 @@ then
 fi
 
 # unmount device
-unmount_device "${DEVICE}"
+"${TOOLS_FOLDER}"/safeunmountdisk.sh "${DEVICE}"
 
 # compressed files
 COMPRESSED=`echo ${1} | grep -i "\.gz$"`
@@ -102,6 +70,9 @@ then
   #dd if="${BOOTSTRAP_FILE}" of="${DEVICE}" bs=446 count=1
   fdisk -y -u -f "${BOOTSTRAP_FILE}" "${RAW_DEVICE}"
 fi 
+
+# ensure device is still unmounted after MBR restoration
+"${TOOLS_FOLDER}"/safeunmountdisk.sh "${DEVICE}"
 
 # restore device partition
 echo "-> restoring device partition (${IMAGE_FILE})..."
@@ -153,9 +124,12 @@ echo "-> mounting device ${DEVICE}..."
 diskutil mountDisk "${DEVICE}"
 if [ ${?} -ne 0 ]
 then
-  diskutil mount "${DEVICE}s2" &>/dev/null
-  diskutil mount "${DEVICE}s3" &>/dev/null
-  diskutil mount "${DEVICE}s4" &>/dev/null
+  IDX=2
+  while [ -e "${DEVICE}s${IDX}" ]
+  do
+    diskutil mount "${DEVICE}s${IDX}" &>/dev/null
+    IDX=`expr ${IDX} + 1`
+  done
 fi
 
 exit 0

@@ -1,43 +1,11 @@
 #!/bin/sh
 
 SCRIPT_NAME=`basename "${0}"`
-VERSION=2.19
-
-unmount_device() {
-  ATTEMPTS=0
-  MAX_ATTEMPTS=12
-  SUCCESS=
-  while [ "_${SUCCESS}" = "_" ]
-  do
-    if [ ${ATTEMPTS} -le ${MAX_ATTEMPTS} ]
-    then
-      echo "-> unmounting device ${1}..."
-      OUTPUT=`diskutil unmountDisk "${1}" 2>&1`
-      if [ ${?} -eq 0 ] || [[ "${OUTPUT}" =~ "successful" ]]
-	  then
-		echo "Unmount successful!"
-        SUCCESS="YES"
-      else
-        KEXTCACHE_PID=`ps -ax | grep kextcache | grep -v grep | awk '{ print $1 }'`
-        if [ -n "${KEXTCACHE_PID}" ]
-        then
-          kill ${KEXTCACHE_PID} 2>/dev/null
-        fi
-        echo "-> an error occured while trying to unmount the device ${1}, new attempt in 5 seconds..."
-        sleep 5
-        ATTEMPTS=`expr ${ATTEMPTS} + 1`
-	  fi
-    else
-      echo "Failed to unmount device ${1}, script aborted."
-      echo "RuntimeAbortScript"
-      exit 1
-    fi
-  done
-}
+VERSION=2.21
 
 if [ ${#} -lt 2 ]
 then
-  echo "Usage: ${SCRIPT_NAME} <image file> disk<ID>s<partition index> [--expand]"
+  echo "Usage: ${SCRIPT_NAME} <image file> disk<ID>s<partition index> [--expand] [--addgenericbcd]"
   echo "Example: ${SCRIPT_NAME} image.ntfs[.gz] disk0s3 --expand"
   echo "RuntimeAbortScript"
   exit 1
@@ -92,14 +60,28 @@ then
 fi
 
 # unmount device
-unmount_device "${DEVICE}"
+"${TOOLS_FOLDER}"/safeunmountdisk.sh "${DEVICE}"
 
 # restored filesystem expansion to partition size required
 if [ -n "${3}" ] && [ "${3}" = "--expand" ]
 then
   EXPAND="YES"
+elif [ -n "${4}" ] && [ "${4}" = "--expand" ]
+then
+  EXPAND="YES"
 else
   EXPAND="NO"
+fi
+
+# add generic BCD
+if [ -n "${3}" ] && [ "${3}" = "--addgenericbcd" ]
+then
+  ADD_GENERIC_BCD="YES"
+elif [ -n "${4}" ] && [ "${4}" = "--addgenericbcd" ]
+then
+  ADD_GENERIC_BCD="YES"
+else
+  ADD_GENERIC_BCD="NO"
 fi
 
 # compressed files
@@ -122,6 +104,9 @@ else
   exit 1
 fi 
 
+# ensure device is still unmounted after MBR restoration
+"${TOOLS_FOLDER}"/safeunmountdisk.sh "${DEVICE}"
+
 # restore NTFS partition
 echo "-> restoring NTFS partition (${IMAGE_FILE})..."
 if [ -n "${COMPRESSED}" ]
@@ -139,23 +124,26 @@ then
 fi
 
 # ensure device is still unmounted after restoration
-unmount_device "${DEVICE}"
+"${TOOLS_FOLDER}"/safeunmountdisk.sh "${DEVICE}"
 
 # update windows boot config files
 BOOT_CONFIG_FILE=`echo "${1}" | sed s/"\\.ntfs"/"\\.bcd"/ | sed s/"\\.gz$"//`
 if [ -e "${BOOT_CONFIG_FILE}" ]
 then
-  if [ -e "${TOOLS_FOLDER}/ms.deviceboot.bcd" ]
+  if [ "${ADD_GENERIC_BCD}" = "YES" ]
   then
-    # ms.deviceboot.bcd (/Boot/BCD) was copied from Windows (Vista/7) after running the following commands
-    # > bcdedit /set {bootmgr} device boot
-    # > bcdedit /set {default} device boot
-    # > bcdedit /set {default} osdevice boot
-    echo "-> restoring generic BCD boot config (${TOOLS_FOLDER}/ms.deviceboot.bcd)..."
-    "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" "${TOOLS_FOLDER}/ms.deviceboot.bcd" /Boot/BCD
-  else
-    echo "-> restoring BCD boot config (${BOOT_CONFIG_FILE})..."
-    "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" "${BOOT_CONFIG_FILE}" /Boot/BCD
+    if [ -e "${TOOLS_FOLDER}/ms.deviceboot.bcd" ]
+    then
+      # ms.deviceboot.bcd (/Boot/BCD) was copied from Windows (Vista/7) after running the following commands
+      # > bcdedit /set {bootmgr} device boot
+      # > bcdedit /set {default} device boot
+      # > bcdedit /set {default} osdevice boot
+      echo "-> restoring generic BCD boot config (${TOOLS_FOLDER}/ms.deviceboot.bcd)..."
+      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" "${TOOLS_FOLDER}/ms.deviceboot.bcd" /Boot/BCD
+    else
+      echo "-> restoring BCD boot config (${BOOT_CONFIG_FILE})..."
+      "${TOOLS_FOLDER}"/ntfscp -f "${NTFS_DEVICE}" "${BOOT_CONFIG_FILE}" /Boot/BCD
+    fi
   fi
 else
   echo "-> ${BOOT_CONFIG_FILE} file not found..."
@@ -329,9 +317,12 @@ echo "-> mounting device ${DEVICE}..."
 diskutil mountDisk "${DEVICE}"
 if [ ${?} -ne 0 ]
 then
-  diskutil mount "${DEVICE}s2" &>/dev/null
-  diskutil mount "${DEVICE}s3" &>/dev/null
-  diskutil mount "${DEVICE}s4" &>/dev/null
+  IDX=2
+  while [ -e "${DEVICE}s${IDX}" ]
+  do
+    diskutil mount "${DEVICE}s${IDX}" &>/dev/null
+    IDX=`expr ${IDX} + 1`
+  done
 fi
 
 exit 0

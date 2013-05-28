@@ -14,7 +14,7 @@
 	<string>/usr/local/sbin/ds_freeze_homedirs.sh</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/sbin/ds_restore_homedirs.sh</string>
+		<string>/usr/local/sbin/ds_freeze_homedirs.sh</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
