@@ -9,7 +9,7 @@ PLBUDDY=/usr/libexec/PlistBuddy
 
 update_kdb_layout() {
   echo "Updating file '${1}'"
-  ${PLBUDDY} -c "Delete :AppleCurrentKeyboardLayoutInputSourceID" "${1}" >/dev/null 2>&1
+  ${PLBUDDY} -c "Delete :AppleCurrentKeyboardLayoutInputSourceID" "${1}" &>/dev/null
   if [ ${?} -eq 0 ] || [ -n "${4}" ]
   then
     ${PLBUDDY} -c "Add :AppleCurrentKeyboardLayoutInputSourceID string com.apple.keylayout.${2}" "${1}"
@@ -17,7 +17,7 @@ update_kdb_layout() {
 
   for SOURCE in AppleDefaultAsciiInputSource AppleCurrentAsciiInputSource AppleCurrentInputSource AppleEnabledInputSources AppleSelectedInputSources
   do
-    ${PLBUDDY} -c "Delete :${SOURCE}" "${1}" >/dev/null 2>&1
+    ${PLBUDDY} -c "Delete :${SOURCE}" "${1}" &>/dev/null
     if [ ${?} -eq 0 ] || [ -n "${4}" ]
     then
       ${PLBUDDY} -c "Add :${SOURCE} array" "${1}"

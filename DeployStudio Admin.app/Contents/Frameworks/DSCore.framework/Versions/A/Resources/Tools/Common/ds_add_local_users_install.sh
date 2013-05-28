@@ -25,7 +25,7 @@ then
   disktool -A "${VOLUME_DEVICE}"
 fi
 
-"${SCRIPT_PATH}"/../Common/ds_finalize_install.sh "${1}"
+"${SCRIPT_PATH}"/ds_finalize_install.sh "${1}"
 
 cp "${SCRIPT_PATH}"/ds_add_local_users/ds_add_local_users_main.sh "${VOLUME_PATH}"/etc/deploystudio/bin
 cp "${SCRIPT_PATH}"/ds_add_local_users/ds_add_local_user.sh "${VOLUME_PATH}"/etc/deploystudio/bin

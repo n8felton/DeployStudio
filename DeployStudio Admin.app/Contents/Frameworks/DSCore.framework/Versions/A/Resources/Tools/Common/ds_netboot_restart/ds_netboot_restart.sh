@@ -2,7 +2,7 @@
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.8 ("`date`")"
+echo "${SCRIPT_NAME} - v1.9 ("`date`")"
 
 for P in "${@}"
 do
@@ -43,7 +43,7 @@ then
     echo "  setting boot device to the netboot set '${NETBOOT_NBI}' on server '${NETBOOT_SERVER}'"
     /usr/sbin/bless --netboot \
                     --server "bsdp://${NETBOOT_SERVER}" \
-                    --options "rp=nfs:${NETBOOT_SERVER}:/private/tftpboot/NetBoot/NetBootSP0:${NETBOOT_NBI}/DeployStudioRuntime.sparseimage" \
+                    --options "rp=nfs:${NETBOOT_SERVER}:/private/tftpboot/NetBoot/NetBootSP0:${NETBOOT_NBI}/NetInstall.dmg" \
                     --verbose
   elif [ -n "${NETBOOT_SERVER}" ]
   then
@@ -61,7 +61,7 @@ else
     echo "  setting boot device to the netboot set '${NETBOOT_NBI}' on server '${NETBOOT_SERVER}'"
     /usr/sbin/nvram boot-device="enet:${NETBOOT_SERVER},\\private\\tftpboot\\NetBoot\\NetBootSP0\\${NETBOOT_NBI}\\ppc\\booter"
     /usr/sbin/nvram boot-file="enet:${NETBOOT_SERVER},\\private\\tftpboot\\NetBoot\\NetBootSP0\\${NETBOOT_NBI}\\ppc\\mach.macosx"
-    /usr/sbin/nvram boot-args="boot-args rp=nfs:${NETBOOT_SERVER}:/private/tftpboot/NetBoot/NetBootSP0:${NETBOOT_NBI}/DeployStudioRuntime.sparseimage" * reboot
+    /usr/sbin/nvram boot-args="boot-args rp=nfs:${NETBOOT_SERVER}:/private/tftpboot/NetBoot/NetBootSP0:${NETBOOT_NBI}/NetInstall.dmg" * reboot
   else
     echo "  setting boot device to default netboot set"
     /usr/sbin/nvram boot-device="enet:bootp"

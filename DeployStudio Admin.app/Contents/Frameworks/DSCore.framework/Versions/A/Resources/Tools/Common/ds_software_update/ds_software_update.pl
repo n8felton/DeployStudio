@@ -75,6 +75,7 @@ if (@NEW_UPDATES > 0) {
     # Reset local SUS url if required
     if (length($RESET_WHEN_DONE) > 0) {
         system("/usr/bin/srm -mf /Library/Preferences/com.apple.SoftwareUpdate.plist");
+        system("/usr/bin/srm -mf /Library/Preferences/com.apple.SoftwareUpdate.plist.lockfile");
     }
 
     # Self removal

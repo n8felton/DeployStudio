@@ -111,13 +111,6 @@ then
     chmod 644 "${VOLUME_PATH}"/Library/LaunchAgents/com.deploystudio.finalizeScript.plist
     chown root:wheel "${VOLUME_PATH}"/Library/LaunchAgents/com.deploystudio.finalizeScript.plist
   fi
-else
-  if [ ! -e "${VOLUME_PATH}"/Library/LaunchDaemons/com.deploystudio.finalizeScript.plist ]
-  then
-    cp "${SCRIPT_PATH}"/com.deploystudio.finalizeScript.104.plist "${VOLUME_PATH}"/Library/LaunchDaemons/
-    chmod 644 "${VOLUME_PATH}"/Library/LaunchDaemons/com.deploystudio.finalizeScript.plist
-    chown root:wheel "${VOLUME_PATH}"/Library/LaunchDaemons/com.deploystudio.finalizeScript.plist
-  fi
 fi
 
 if [ ! -e "${VOLUME_PATH}"/Library/LaunchAgents/com.deploystudio.finalizeCleanup.plist ]

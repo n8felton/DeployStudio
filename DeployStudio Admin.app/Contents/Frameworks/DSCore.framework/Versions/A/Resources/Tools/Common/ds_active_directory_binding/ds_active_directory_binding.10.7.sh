@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.19 ("`date`")"
+echo "${SCRIPT_NAME} - v1.20 ("`date`")"
 
 #
 # functions
@@ -162,38 +162,42 @@ then
   #
   # Update AD plugin options
   #
-  echo "Setting AD plugin options before binding..." 2>&1
+  echo "Setting AD plugin options..." 2>&1
   dsconfigad -mobile ${MOBILE} 2>&1
+  sleep 1
   dsconfigad -mobileconfirm ${MOBILE_CONFIRM} 2>&1 
+  sleep 1
   dsconfigad -localhome ${LOCAL_HOME} 2>&1
+  sleep 1
   dsconfigad -useuncpath ${USE_UNC_PATHS} 2>&1
+  sleep 1
   dsconfigad -protocol ${UNC_PATHS_PROTOCOL} 2>&1
+  sleep 1
   dsconfigad -packetsign ${PACKET_SIGN} 2>&1
+  sleep 1
   dsconfigad -packetencrypt ${PACKET_ENCRYPT} 2>&1
+  sleep 1
   dsconfigad -passinterval ${PASSWORD_INTERVAL} 2>&1
   if [ -n "${ADMIN_GROUPS}" ]
   then
+    sleep 1
     dsconfigad -groups "${ADMIN_GROUPS}" 2>&1
   fi
   if [ "${AUTH_DOMAIN}" != 'All Domains' ]
   then
+    sleep 1
     dsconfigad -alldomains disable 2>&1
   fi
   if [ -n "${UID_MAPPING}" ]
   then
+    sleep 1
     dsconfigad -uid "${UID_MAPPING}" 2>&1
   fi
   if [ -n "${GID_MAPPING}" ]
   then
+    sleep 1
     dsconfigad -gid "${GID_MAPPING}" 2>&1
   fi
-
-  #
-  # Restart directory services 
-  #
-  echo "Killing opendirectoryd daemon..." 2>&1
-  killall opendirectoryd
-  sleep 5
 
   #
   # Self-removal 
@@ -208,6 +212,11 @@ then
         echo "The binding process looks good, will try to configure Kerberized services on this machine for the default realm ${DEFAULT_REALM}..." 2>&1
         /usr/sbin/sso_util configure -r "${DEFAULT_REALM}" -a "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" all
       fi
+      #
+      # Give OD a chance to fully apply new settings
+      #
+      echo "Applying changes..." 2>&1
+      sleep 10
     fi
     if [ -e "${CONFIG_FILE}" ]
     then

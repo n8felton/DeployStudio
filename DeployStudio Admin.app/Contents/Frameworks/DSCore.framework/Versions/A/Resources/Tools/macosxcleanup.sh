@@ -2,7 +2,7 @@
 
 SCRIPT_NAME=`basename "${0}"`
 TOOLS_FOLDER=`dirname "${0}"`
-VERSION=1.14
+VERSION=1.15
 
 if [ ${#} -lt 2 ]
 then
@@ -19,6 +19,8 @@ then
   rm -f  "${2}"/var/vm/swapfile* 2>&1
   rm -rf "${2}"/System/Library/Caches/* 2>&1
   rm -f  "${2}"/var/log/ds_finalize.log 2>&1
+  rm -f  "${2}"/etc/deploystudio/bin/.ds_finalize.calls 2>&1
+  rm -f  "${2}"/etc/deploystudio/bin/.ds_software_update.calls 2>&1
 elif [ "${1}" == "-postrestoration" ]
 then
   rm -f  "${2}/Desktop DB" 2>&1
@@ -41,6 +43,8 @@ then
   rm -f  "${2}"/var/pcast/server/krb_cc 2>&1
   rm -f  "${2}"/var/vm/sleepimage 2>&1
   rm -f  "${2}"/var/log/ds_finalize.log 2>&1
+  rm -f  "${2}"/etc/deploystudio/bin/.ds_finalize.calls 2>&1
+  rm -f  "${2}"/etc/deploystudio/bin/.ds_software_update.calls 2>&1
   
   if [ -e "${2}"/Library/Filesystems/Xsan/config/uuid ]
   then

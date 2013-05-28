@@ -6,9 +6,9 @@
 	<string>com.deploystudio.FinalizeApp</string>
 	<key>LimitLoadToSessionType</key>
 	<string>LoginWindow</string>
-	<key>OnDemand</key>
-	<false/>
 	<key>RunAtLoad</key>
+	<true/>
+	<key>LaunchOnlyOnce</key>
 	<true/>
 	<key>ProgramArguments</key>
 	<array>

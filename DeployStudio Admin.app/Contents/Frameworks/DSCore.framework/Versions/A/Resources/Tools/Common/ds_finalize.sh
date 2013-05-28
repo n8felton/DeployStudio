@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-/bin/echo "${SCRIPT_NAME} - v1.26 ("`date`")"
+/bin/echo "${SCRIPT_NAME} - v1.27 ("`date`")"
 
 custom_logger() {
   /bin/echo "${SCRIPT_NAME} - $1"
@@ -130,7 +130,10 @@ if [ ! -e /Library/Keychains/System.keychain ]
 then
   /usr/sbin/systemkeychain -C
 fi
-exec_if_exists "/usr/libexec/configureLocalKDC"
+if [ ! -e "/etc/deploystudio/bin/.ds_finalize.calls" ]
+then
+  exec_if_exists "/usr/libexec/configureLocalKDC"
+fi
 exec_if_exists "/etc/deploystudio/bin/ds_add_local_users_main.sh"
 
 #
@@ -206,7 +209,7 @@ fi
 if [ -e /etc/deploystudio/ds_packages ]
 then
   # Delete packages folder if empty
-  /bin/rmdir /etc/deploystudio/ds_packages 2>&1 >/dev/null
+  /bin/rmdir /etc/deploystudio/ds_packages &>/dev/null
   if [ ${?} -eq 0 ]
   then
     # restore initial system configuration

@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "${0}"`
 SCRIPT_PATH=`dirname "${0}"`
 
-echo "${SCRIPT_NAME} - v1.0 ("`date`")"
+echo "${SCRIPT_NAME} - v1.1 ("`date`")"
 
 if [ ${#} -ne 2 ]
 then
@@ -29,6 +29,7 @@ fi
 defaults write "${VOLUME_PATH}"/Library/Preferences/com.apple.SoftwareUpdate CatalogURL "${2}"
 chmod 644 "${VOLUME_PATH}"/Library/Preferences/com.apple.SoftwareUpdate.plist
 chown root:admin "${VOLUME_PATH}"/Library/Preferences/com.apple.SoftwareUpdate.plist
+rm "${VOLUME_PATH}"/Library/Preferences/com.apple.SoftwareUpdate.plist.lockfile &>/dev/null
 
 echo "${SCRIPT_NAME} - end"
 

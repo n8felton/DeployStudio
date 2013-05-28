@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.27 ("`date`")"
+echo "${SCRIPT_NAME} - v1.28 ("`date`")"
 
 #
 # functions
@@ -183,13 +183,6 @@ done
 if [ "${SUCCESS}" = "YES" ]
 then
   #
-  # Restart directory services
-  #
-  echo "Killing opendirectoryd daemon..." 2>&1
-  killall opendirectoryd
-  sleep 5
-
-  #
   # Trigger the node availability
   #
   echo "Triggering /LDAPv3/${ODM_SERVER} node..." 2>&1
@@ -288,7 +281,13 @@ then
 	    /usr/sbin/sso_util configure -r "${DEFAULT_REALM}" -a "${ADMIN_LOGIN}" -p "${ADMIN_PWD}" all
 	  fi
 	fi
-	if [ -e "${CONFIG_FILE}" ]
+    #
+    # Give OD a chance to fully apply new settings
+    #
+    echo "Applying changes..." 2>&1
+    sleep 10
+	
+    if [ -e "${CONFIG_FILE}" ]
 	then
 	  /usr/bin/srm -mf "${CONFIG_FILE}"
 	fi

@@ -10,15 +10,15 @@ PLBUDDY=/usr/libexec/PlistBuddy
 update_language() {
   echo "Updating language preference in '${1}'"
 
-  ${PLBUDDY} -c "Delete :AppleLanguages" "${1}" >/dev/null 2>&1
+  ${PLBUDDY} -c "Delete :AppleLanguages" "${1}" &>/dev/null
   if [ ${?} -eq 0 ] || [ -n "${3}" ]
   then
     ${PLBUDDY} -c "Add :AppleLanguages array" "${1}"
     ${PLBUDDY} -c "Add :AppleLanguages:0 string '${2}'" "${1}"
   fi
 
-  ${PLBUDDY} -c "Delete :AppleLocale" "${1}" >/dev/null 2>&1
-  ${PLBUDDY} -c "Delete :Country" "${1}" >/dev/null 2>&1
+  ${PLBUDDY} -c "Delete :AppleLocale" "${1}" &>/dev/null
+  ${PLBUDDY} -c "Delete :Country" "${1}" &>/dev/null
 }
 
 if [ ${#} -lt 2 ]

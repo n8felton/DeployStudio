@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "fixByHostPrefs.sh - v1.9 ("`date`")"
+echo "fixByHostPrefs.sh - v1.10 ("`date`")"
 
 _HOMES=("/Volumes/${1}/Users" "/Volumes/${1}/System/Library/User Template")
 _MACADDR=`/sbin/ifconfig en0 | awk '/ether/ { gsub(":", ""); print $2 }'`
@@ -91,9 +91,15 @@ do
     _USERHOMES=`ls -A "${_HOMES[$_INDEX]}"`
     for _USERHOME in ${_USERHOMES}
     do
-      _HOME=${_HOMES[${_INDEX}]}/${_USERHOME}/Library/Preferences/ByHost
+      _HOME=${_HOMES[${_INDEX}]}/${_USERHOME}/Library/Preferences
+      if [ -d "${_HOME}" ]
+      then
+        rm "${_HOME}"/.*.lockfile "${_HOME}"/*.lockfile &>/dev/null
+      fi
+      _HOME=${_HOME}/ByHost
       if [ -d "${_HOME}" ]
 	  then
+        rm "${_HOME}"/.*.lockfile "${_HOME}"/*.lockfile &>/dev/null
         cd "${_HOME}"
 		fix_byhost_folder_preferences
       fi
@@ -120,9 +126,15 @@ then
     then 
       EXTRA_USER_RECORD=`echo ${EXTRA_USER} | sed s/.plist//`
       EXTRA_USER_HOME=`defaults read "${_DS_USERS_PATH}/${EXTRA_USER_RECORD}" home | awk -F\" '{ print $2 }' | tr -d "\n"`
-	  EXTRA_USER_BYHOST_PATH="/Volumes/${1}/${EXTRA_USER_HOME}/Library/Preferences/ByHost"
+      EXTRA_USER_PREFS_PATH="/Volumes/${1}/${EXTRA_USER_HOME}/Library/Preferences"
+      if [ -d "${EXTRA_USER_PREFS_PATH}" ]
+      then
+        rm "${EXTRA_USER_PREFS_PATH}"/.*.lockfile "${EXTRA_USER_PREFS_PATH}"/*.lockfile &>/dev/null
+      fi
+      EXTRA_USER_BYHOST_PATH="${EXTRA_USER_PREFS_PATH}/ByHost"
       if [ -e "${EXTRA_USER_BYHOST_PATH}" ] && [ "${EXTRA_USER_HOME}" != "/var/empty" ] && [ "${EXTRA_USER_HOME}" != "/var/root" ] && [ "${EXTRA_USER_HOME:0:7}" != "/Users/" ]
       then
+        rm "${EXTRA_USER_BYHOST_PATH}"/.*.lockfile "${EXTRA_USER_BYHOST_PATH}"/*.lockfile &>/dev/null
 	    cd "${EXTRA_USER_BYHOST_PATH}"
 		fix_byhost_folder_preferences
 		cd "/Volumes/${1}/var/db/dslocal/nodes/Default/users/"

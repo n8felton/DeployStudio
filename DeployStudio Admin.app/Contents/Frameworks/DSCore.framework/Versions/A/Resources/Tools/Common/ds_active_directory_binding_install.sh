@@ -69,13 +69,13 @@ chown root:wheel "${VOLUME_PATH}"/etc/deploystudio/bin/ds_active_directory_bindi
 
 if [ -e "${VOLUME_PATH}"/System/Library/CoreServices/ServerVersion.plist ]
 then
-  rm -rf "${VOLUME_PATH}/Library/Preferences/OpenDirectory/Configurations/Active Directory" 2>&1 >/dev/null
-  rm -rf "${VOLUME_PATH}/Library/Preferences/OpenDirectory/DynamicData/Active Directory" 2>&1 >/dev/null
-  rm -f  "${VOLUME_PATH}"/Library/Preferences/DirectoryService/ActiveDirectory.plist 2>&1 >/dev/null
-  rm -f  "${VOLUME_PATH}"/var/db/dslocal/nodes/Default/config/KerberosKDC.plist 2>&1 >/dev/null
-  rm -f  "${VOLUME_PATH}"/Library/Keychains/System.keychain 2>&1 >/dev/null
-  rm -f  "${VOLUME_PATH}"/etc/krb5.keytab 2>&1 >/dev/null
-  rm -rf "${VOLUME_PATH}"/var/db/krb5kdc 2>&1 >/dev/null
+  rm -rf "${VOLUME_PATH}/Library/Preferences/OpenDirectory/Configurations/Active Directory" &>/dev/null
+  rm -rf "${VOLUME_PATH}/Library/Preferences/OpenDirectory/DynamicData/Active Directory" &>/dev/null
+  rm -f  "${VOLUME_PATH}"/Library/Preferences/DirectoryService/ActiveDirectory.plist &>/dev/null
+  rm -f  "${VOLUME_PATH}"/var/db/dslocal/nodes/Default/config/KerberosKDC.plist &>/dev/null
+  rm -f  "${VOLUME_PATH}"/Library/Keychains/System.keychain &>/dev/null
+  rm -f  "${VOLUME_PATH}"/etc/krb5.keytab &>/dev/null
+  rm -rf "${VOLUME_PATH}"/var/db/krb5kdc &>/dev/null
 fi
 
 #"${SCRIPT_PATH}"/ds_enable_verbose_reboot.sh "${1}"

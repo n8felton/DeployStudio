@@ -20,7 +20,7 @@ then
   /usr/sbin/installer -pkg "${PACKAGE}" -target / -verboseR
   if [ ${?} -eq 0 ]
   then
-    echo "Install successfull, removing script and related packages..."
+    echo "Install successful, removing script and related packages..."
     rm -f  "${PACKAGE_INDEX_FILE}"
     rm -rf "${PACKAGE}"
 
