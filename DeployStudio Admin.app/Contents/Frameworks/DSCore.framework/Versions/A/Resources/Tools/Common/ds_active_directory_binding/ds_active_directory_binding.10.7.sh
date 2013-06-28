@@ -5,7 +5,7 @@ histchars=
 
 SCRIPT_NAME=`basename "${0}"`
 
-echo "${SCRIPT_NAME} - v1.21 ("`date`")"
+echo "${SCRIPT_NAME} - v1.22 ("`date`")"
 
 #
 # functions
@@ -184,10 +184,20 @@ then
     sleep 1
     dsconfigad -groups "${ADMIN_GROUPS}" 2>&1
   fi
-  if [ "${AUTH_DOMAIN}" != 'All Domains' ]
+  if [ -n "${AUTH_DOMAIN}" ] && [ "${AUTH_DOMAIN}" != 'All Domains' ]
   then
     sleep 1
     dsconfigad -alldomains disable 2>&1
+    AD_DOMAIN_NODE=`dscl /Search -read / CSPSearchPath | grep "Active Directory" | sed -e s/".*\/Active Directory\/"// -e s/"\/All .*"//`
+    if [ -n "${AD_DOMAIN_NODE}" ]
+    then
+      echo "Updating authentication search path..." 2>&1
+      dscl localhost -delete /Search CSPSearchPath "/Active Directory/${AD_DOMAIN_NODE}/All Domains" 2>/dev/null
+      dscl localhost -append /Search CSPSearchPath "/Active Directory/${AD_DOMAIN_NODE}/${AUTH_DOMAIN}"
+      echo "Updating contacts search path..." 2>&1
+      dscl localhost -delete /Contact CSPSearchPath "/Active Directory/${AD_DOMAIN_NODE}/All Domains" 2>/dev/null
+      dscl localhost -append /Contact CSPSearchPath "/Active Directory/${AD_DOMAIN_NODE}/${AUTH_DOMAIN}"
+    fi
   fi
   if [ -n "${UID_MAPPING}" ]
   then

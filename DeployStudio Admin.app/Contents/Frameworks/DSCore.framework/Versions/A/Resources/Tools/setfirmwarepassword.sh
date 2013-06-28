@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SCRIPT_NAME=`basename "${0}"`
-VERSION=1.1
+VERSION=1.2
 
 usage() {
   echo "Usage: ${SCRIPT_NAME} {none|command|full} [<password> [<old password>]]"
@@ -33,7 +33,7 @@ then
         "none")
           ;;
         "command")
-          "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m command -p "${2}"
+          "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m command -p "${2}" >/dev/null
           if [ $? -ne 0 ]
           then
             echo "RuntimeAbortScript"
@@ -41,7 +41,7 @@ then
           fi
           ;;
         "full")
-          "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m full -p "${2}"
+          "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m full -p "${2}" >/dev/null
           if [ $? -ne 0 ]
           then
             echo "RuntimeAbortScript"
@@ -61,7 +61,7 @@ then
   then
     case "${1}" in
       "none")
-        "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -d -o "${2}"
+        "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -d -o "${2}" >/dev/null
         if [ $? -ne 0 ]
         then
           echo "Incorrect password, script aborted."
@@ -70,7 +70,7 @@ then
         fi
         ;;
       "command")
-        "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m command -p "${2}" -o "${3}"
+        "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m command -p "${2}" -o "${3}" >/dev/null
         if [ $? -ne 0 ]
         then
           echo "Incorrect password, script aborted."
@@ -79,7 +79,7 @@ then
         fi
         ;;
       "full")
-        "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m full -p "${2}" -o "${3}"
+        "${SETREGPROPTOOL}.exp" "${SETREGPROPTOOL}" -m full -p "${2}" -o "${3}" >/dev/null
         if [ $? -ne 0 ]
         then
           echo "Incorrect password, script aborted."
@@ -101,13 +101,13 @@ elif [ ${#} -ge 2 ] || [ "${1}" = "none" ]
 then
   case "${1}" in
     "none")
-      /usr/sbin/nvram security-mode="none"
+      /usr/sbin/nvram security-mode="none" >/dev/null
       ;;
     "command")
-      /usr/sbin/nvram security-mode="command" security-password="${2}"
+      /usr/sbin/nvram security-mode="command" security-password="${2}" >/dev/null
       ;;
     "full")
-      /usr/sbin/nvram security-mode="full" security-password="${2}"
+      /usr/sbin/nvram security-mode="full" security-password="${2}" >/dev/null
       ;;
     *)
       echo "Invalid firmware password mode (${1}), script aborted."
